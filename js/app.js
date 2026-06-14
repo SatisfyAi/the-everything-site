@@ -236,11 +236,16 @@ function setupTimerTab() {
     renderTimerTab();
   };
   document.getElementById('timer-stop').onclick = async () => {
-    const session = timerStop();
-    if (session) {
+    const result = timerStop();
+    if (result && result.discarded) {
+      setStatus(
+        `Only ${result.elapsedSeconds}s - not saved (entries under 1 minute are discarded).`,
+        'warn',
+      );
+    } else if (result) {
       await persist(
-        (d) => d.sessions.push(session),
-        `Add session: ${session.category}`,
+        (d) => d.sessions.push(result),
+        `Add session: ${result.category}`,
       );
       renderDashboardTab();
       renderHistoryTab();
