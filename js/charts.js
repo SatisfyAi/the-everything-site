@@ -27,15 +27,65 @@ function wrapText(ctx, text, maxWidth) {
 // Draws a donut chart styled like the user's existing monthly report image:
 // black background, segment time labels, center "Total" text, side legend.
 // `segments` is an array of { label, color, value } where value is in minutes.
+//
+// The canvas is sized dynamically: wide enough for the legend text, and tall
+// enough to fit either the donut or the (possibly multi-line) legend,
+// whichever needs more room. This keeps everything visible - and exportable
+// as a single image - no matter how long the category names are or how many
+// digits the totals have.
 function drawDonutChart(canvas, { title, segments }) {
-  const W = (canvas.width = 1200);
-  const H = (canvas.height = 800);
+  const fontFamily = "'Poppins', 'Segoe UI', sans-serif";
+
+  const W = 1300;
+  const topMargin = 130; // space reserved for the title
+  const bottomMargin = 50;
+  const sideMargin = 60;
+
+  const cx = 430;
+  const outerR = 290;
+  const innerR = 175;
+  const donutDiameter = outerR * 2;
+
+  const legendX = cx + outerR + 90;
+  const maxLegendWidth = W - legendX - sideMargin;
+
+  const visible = segments.filter((s) => s.value > 0);
+  const total = visible.reduce((sum, s) => sum + s.value, 0);
+
+  // Use the canvas's own context for measurement before we know the final size.
   const ctx = canvas.getContext('2d');
+
+  // ---- Work out the legend layout, shrinking the font if it's too tall ----
+  let legendFontSize = 36;
+  let legendLayout = computeLegendLayout(
+    ctx,
+    visible,
+    legendFontSize,
+    maxLegendWidth,
+    fontFamily,
+  );
+  while (
+    legendLayout.totalHeight > donutDiameter + 160 &&
+    legendFontSize > 22
+  ) {
+    legendFontSize -= 2;
+    legendLayout = computeLegendLayout(
+      ctx,
+      visible,
+      legendFontSize,
+      maxLegendWidth,
+      fontFamily,
+    );
+  }
+
+  // ---- Finalize canvas size ----
+  const contentHeight = Math.max(donutDiameter, legendLayout.totalHeight);
+  const H = topMargin + contentHeight + bottomMargin;
+  canvas.width = W;
+  canvas.height = H;
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, W, H);
-
-  const fontFamily = "'Poppins', 'Segoe UI', sans-serif";
 
   // Title
   ctx.fillStyle = '#cfcfcf';
@@ -44,14 +94,9 @@ function drawDonutChart(canvas, { title, segments }) {
   ctx.textAlign = 'left';
   ctx.fillText(title, 60, 36);
 
-  const visible = segments.filter((s) => s.value > 0);
-  const total = visible.reduce((sum, s) => sum + s.value, 0);
+  const cy = topMargin + contentHeight / 2;
 
-  const cx = 430;
-  const cy = 470;
-  const outerR = 290;
-  const innerR = 175;
-
+  // ---- Donut ----
   if (total > 0 && visible.length === 1) {
     // A single category covers the whole ring. Draw it as plain filled
     // circles (no start/end seam) instead of an arc path, which would
@@ -67,13 +112,15 @@ function drawDonutChart(canvas, { title, segments }) {
     ctx.fillStyle = '#000000';
     ctx.fill();
 
-    // Value label, centered at the top of the ring
     const midR = (outerR + innerR) / 2;
-    ctx.fillStyle = '#000000';
-    ctx.font = `800 38px ${fontFamily}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(formatMinutesAsHM(seg.value), cx, cy - midR);
+    drawSegmentLabel(
+      ctx,
+      formatMinutesAsHM(seg.value),
+      cx,
+      cy - midR,
+      outerR - innerR,
+      fontFamily,
+    );
   } else if (total > 0) {
     let startAngle = -Math.PI / 2;
     visible.forEach((seg) => {
@@ -90,16 +137,20 @@ function drawDonutChart(canvas, { title, segments }) {
       ctx.strokeStyle = '#000000';
       ctx.stroke();
 
-      // Segment value label
+      // Segment value label, sized to fit the slice's width at mid-radius
       const midAngle = (startAngle + endAngle) / 2;
       const midR = (outerR + innerR) / 2;
       const lx = cx + Math.cos(midAngle) * midR;
       const ly = cy + Math.sin(midAngle) * midR;
-      ctx.fillStyle = '#000000';
-      ctx.font = `800 38px ${fontFamily}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(formatMinutesAsHM(seg.value), lx, ly);
+      const chordWidth = 2 * midR * Math.sin(sweep / 2);
+      drawSegmentLabel(
+        ctx,
+        formatMinutesAsHM(seg.value),
+        lx,
+        ly,
+        chordWidth,
+        fontFamily,
+      );
 
       startAngle = endAngle;
     });
@@ -113,90 +164,74 @@ function drawDonutChart(canvas, { title, segments }) {
     ctx.fill();
   }
 
-  // Center text
+  // ---- Center "Total" text, shrinking the value if it's too wide ----
+  const totalLabel = formatMinutesAsHM(total);
+  let totalFontSize = 56;
+  ctx.font = `800 ${totalFontSize}px ${fontFamily}`;
+  const maxTotalWidth = innerR * 2 - 50;
+  while (
+    ctx.measureText(totalLabel).width > maxTotalWidth &&
+    totalFontSize > 26
+  ) {
+    totalFontSize -= 2;
+    ctx.font = `800 ${totalFontSize}px ${fontFamily}`;
+  }
+
   ctx.fillStyle = '#cfcfcf';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = `800 44px ${fontFamily}`;
   ctx.fillText('Total', cx, cy - 30);
-  ctx.font = `800 56px ${fontFamily}`;
-  ctx.fillText(formatMinutesAsHM(total), cx, cy + 35);
+  ctx.font = `800 ${totalFontSize}px ${fontFamily}`;
+  ctx.fillText(totalLabel, cx, cy + Math.max(28, totalFontSize * 0.6));
 
-  // Legend (all categories with time > 0, in original order)
-  const legendX = 870;
-  let legendY = 260;
-  const maxLegendWidth = W - legendX - 40;
-
-  visible.forEach((seg) => {
+  // ---- Legend, vertically centered alongside the donut ----
+  let legendY = cy - legendLayout.totalHeight / 2;
+  legendLayout.entries.forEach(({ seg, lines, height }) => {
     ctx.fillStyle = seg.color;
-    ctx.font = `800 36px ${fontFamily}`;
+    ctx.font = `800 ${legendFontSize}px ${fontFamily}`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    const lines = wrapText(ctx, seg.label, maxLegendWidth);
     lines.forEach((line, i) => {
-      ctx.fillText(line, legendX, legendY + i * 44);
+      ctx.fillText(line, legendX, legendY + i * legendLayout.lineHeight);
     });
-    legendY += lines.length * 44 + 36;
+    legendY += height + legendLayout.entryGap;
   });
 
   return canvas;
 }
 
-// Renders/updates a Chart.js stacked bar chart for period comparisons.
-// `categories` is the full category list (for color/label lookup).
-// `buckets` is an array of { label, totals: { categoryKey: minutes } }.
-// Returns the Chart instance so the caller can destroy it later.
-function renderBarChart(canvas, categories, buckets, existingChart) {
-  if (typeof Chart === 'undefined') {
-    console.error('Chart.js is not loaded');
-    setStatus('Chart.js library is missing', 'error');
-    return null;
-  }
+// Lays out the legend at a given font size, returning per-entry wrapped
+// lines plus the total height the legend would occupy.
+function computeLegendLayout(ctx, visible, fontSize, maxWidth, fontFamily) {
+  const lineHeight = fontSize + 8;
+  const entryGap = fontSize;
+  ctx.font = `800 ${fontSize}px ${fontFamily}`;
 
-  if (existingChart) existingChart.destroy();
-
-  const datasets = categories.map((cat) => ({
-    label: cat.label,
-    backgroundColor: cat.color,
-    data: buckets.map((b) => +((b.totals[cat.key] || 0) / 60).toFixed(2)),
-    stack: 'time',
-  }));
-
-  const ctx = canvas.getContext('2d');
-  return new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: buckets.map((b) => b.label),
-      datasets,
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          stacked: true,
-          ticks: { color: '#cfcfcf' },
-          grid: { color: '#2a2a2a' },
-        },
-        y: {
-          stacked: true,
-          beginAtZero: true,
-          title: { display: true, text: 'Hours', color: '#cfcfcf' },
-          ticks: { color: '#cfcfcf' },
-          grid: { color: '#2a2a2a' },
-        },
-      },
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#cfcfcf' },
-        },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.formattedValue}h`,
-          },
-        },
-      },
-    },
+  let totalHeight = 0;
+  const entries = visible.map((seg) => {
+    const lines = wrapText(ctx, seg.label, maxWidth);
+    const height = lines.length * lineHeight;
+    totalHeight += height + entryGap;
+    return { seg, lines, height };
   });
+  if (entries.length) totalHeight -= entryGap; // no trailing gap after the last entry
+
+  return { lineHeight, entryGap, entries, totalHeight };
+}
+
+// Draws a segment's value label, shrinking the font so it fits within
+// `availableWidth` (e.g. a thin slice with a large number of hours).
+function drawSegmentLabel(ctx, text, x, y, availableWidth, fontFamily) {
+  let fontSize = 38;
+  ctx.font = `800 ${fontSize}px ${fontFamily}`;
+  const maxWidth = Math.max(availableWidth - 12, 24);
+  while (ctx.measureText(text).width > maxWidth && fontSize > 16) {
+    fontSize -= 2;
+    ctx.font = `800 ${fontSize}px ${fontFamily}`;
+  }
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
 }
