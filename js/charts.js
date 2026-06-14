@@ -147,6 +147,12 @@ function drawDonutChart(canvas, { title, segments }) {
 // `buckets` is an array of { label, totals: { categoryKey: minutes } }.
 // Returns the Chart instance so the caller can destroy it later.
 function renderBarChart(canvas, categories, buckets, existingChart) {
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js is not loaded');
+    setStatus('Chart.js library is missing', 'error');
+    return null;
+  }
+
   if (existingChart) existingChart.destroy();
 
   const datasets = categories.map((cat) => ({
