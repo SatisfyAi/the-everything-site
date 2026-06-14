@@ -68,21 +68,28 @@ function timerElapsedSeconds(state) {
   return total;
 }
 
-// Stops the timer and returns a session record ready to be saved.
-// Clears the active timer state.
+// Stops the timer. Returns:
+//  - a session object if the tracked time was at least 1 minute
+//  - { discarded: true, elapsedSeconds } if it was under 1 minute (too short to log)
+//  - null if there was no active timer
+// Either way, the active timer state is cleared.
 function timerStop() {
   const state = timerGetState();
   if (!state) return null;
   const elapsed = timerElapsedSeconds(state);
-  const session = {
+  timerSetState(null);
+
+  if (elapsed < 60) {
+    return { discarded: true, elapsedSeconds: elapsed };
+  }
+
+  return {
     id: cryptoRandomId(),
     category: state.category,
     startDate: state.originalStart,
     endDate: new Date().toISOString(),
-    minutes: Math.max(1, Math.round(elapsed / 60)),
+    minutes: Math.round(elapsed / 60),
   };
-  timerSetState(null);
-  return session;
 }
 
 // Discards the active timer without creating a session.
