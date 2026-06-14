@@ -155,7 +155,7 @@ async function persist(mutateFn, message) {
 
   if (!ghConfigured()) {
     setStatus(
-      'Not synced — set up GitHub in Settings to save permanently.',
+      'Not synced - set up GitHub in Settings to save permanently.',
       'warn',
     );
     return;
@@ -357,7 +357,7 @@ function updateEntryDuration() {
   const out = document.getElementById('entry-duration');
 
   if (!dateStr || !startStr || !endStr) {
-    out.textContent = '—';
+    out.textContent = '-';
     return;
   }
   const start = new Date(`${dateStr}T${startStr}`);
@@ -866,7 +866,7 @@ function setupSettingsForm() {
     setSettingsStatus('Testing connection…');
     try {
       await ghTestConnection();
-      setSettingsStatus('Connected — loading data…');
+      setSettingsStatus('Connected - loading data…');
       await loadFromGitHub();
       setSettingsStatus('Connected and synced.');
       setStatus('Synced', 'ok');
