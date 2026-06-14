@@ -16,6 +16,43 @@ let entrySelectedCategory = null;
 
 document.addEventListener('DOMContentLoaded', init);
 
+// Global error reporting (shows file + line number)
+window.addEventListener('error', (event) => {
+  const file = event.filename || 'unknown file';
+  const line = event.lineno || '?';
+  const column = event.colno || '?';
+  const message = event.message || 'Unknown error';
+
+  console.error(`[${file}:${line}:${column}] ${message}`, event.error);
+
+  try {
+    setStatus(
+      `Error in ${file} at line ${line}:${column} - ${message}`,
+      'error',
+    );
+  } catch (_) {}
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  const reason = event.reason;
+  const message =
+    reason?.message ||
+    (typeof reason === 'string' ? reason : 'Unhandled Promise rejection');
+
+  const stackLine = reason?.stack?.split('\n')?.[1]?.trim() || '';
+
+  console.error('Unhandled Promise Rejection:', reason);
+
+  try {
+    setStatus(
+      `Unhandled Promise Rejection: ${message}${
+        stackLine ? ` (${stackLine})` : ''
+      }`,
+      'error',
+    );
+  } catch (_) {}
+});
+
 async function init() {
   setupTabs();
   setupSettingsForm();
