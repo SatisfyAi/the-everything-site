@@ -1,5 +1,7 @@
 // ===================== State =====================
 
+const APP_KEY = 'timetracker';
+
 const state = {
   data: { categories: DEFAULT_CATEGORIES.slice(), sessions: [] },
   sha: null,
@@ -61,7 +63,7 @@ async function init() {
   setupCategoriesTab();
   updateConfigBanner();
 
-  if (ghConfigured()) {
+  if (ghConfigured(APP_KEY)) {
     setStatus('Loading…', 'busy');
     try {
       await loadFromGitHub();
@@ -77,7 +79,7 @@ async function init() {
 
 function updateConfigBanner() {
   const banner = document.getElementById('config-banner');
-  banner.hidden = ghConfigured();
+  banner.hidden = ghConfigured(APP_KEY);
 }
 
 // ===================== Date / format helpers =====================
@@ -138,12 +140,14 @@ function setSettingsStatus(message, isError = false) {
 }
 
 async function loadFromGitHub() {
-  const { data, sha } = await ghLoad();
+  const emptyData = { categories: DEFAULT_CATEGORIES.slice(), sessions: [] };
+  const { data, sha } = await ghLoad(APP_KEY, emptyData);
   state.data = data;
   state.sha = sha;
   if (!state.data.categories || !state.data.categories.length) {
     state.data.categories = DEFAULT_CATEGORIES.slice();
   }
+  if (!state.data.sessions) state.data.sessions = [];
 }
 
 // Merge strategy used after a save conflict: union sessions/categories by id/key,
@@ -169,10 +173,13 @@ function mergeData(local, remote) {
 async function trySave(message, attempts = 3) {
   for (let i = 0; i < attempts; i++) {
     try {
-      return await ghSave(state.data, state.sha, message);
+      return await ghSave(APP_KEY, state.data, state.sha, message);
     } catch (e) {
       if (e.conflict && i < attempts - 1) {
-        const fresh = await ghLoad();
+        const fresh = await ghLoad(APP_KEY, {
+          categories: DEFAULT_CATEGORIES.slice(),
+          sessions: [],
+        });
         state.data = mergeData(state.data, fresh.data);
         state.sha = fresh.sha;
         continue;
@@ -188,7 +195,7 @@ async function trySave(message, attempts = 3) {
 async function persist(mutateFn, message) {
   mutateFn(state.data);
 
-  if (!ghConfigured()) {
+  if (!ghConfigured(APP_KEY)) {
     setStatus(
       'Not synced - set up GitHub in Settings to save permanently.',
       'warn',
@@ -404,7 +411,7 @@ function updateEntryDuration() {
   let end = new Date(`${dateStr}T${endStr}`);
   if (nextDay || end <= start) end = new Date(end.getTime() + 24 * 3600 * 1000);
   const minutes = Math.round((end - start) / 60000);
-  out.textContent = `${formatMinutesAsHM(minutes)} (${minutes} min)`;
+  out.textContent = formatMinutesAsHM(minutes);
 }
 
 async function saveManualEntry() {
@@ -786,6 +793,13 @@ function renderCategoriesTab() {
   state.data.categories.forEach((cat) => {
     const row = document.createElement('div');
     row.className = 'category-row';
+    row.draggable = true;
+    row.dataset.key = cat.key;
+
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    handle.textContent = '⠿';
+    handle.title = 'Drag to reorder';
 
     const colorPicker = document.createElement('input');
     colorPicker.type = 'color';
@@ -828,7 +842,46 @@ function renderCategoriesTab() {
     };
     delBtn.onclick = () => deleteCategory(cat.key);
 
-    row.append(colorPicker, hexInput, labelInput, delBtn);
+    // ---- Drag-and-drop reordering ----
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', cat.key);
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      list
+        .querySelectorAll('.category-row')
+        .forEach((r) => r.classList.remove('drag-over'));
+    });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      list
+        .querySelectorAll('.category-row')
+        .forEach((r) => r.classList.remove('drag-over'));
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => {
+      row.classList.remove('drag-over');
+    });
+    row.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const fromKey = e.dataTransfer.getData('text/plain');
+      const toKey = cat.key;
+      if (fromKey === toKey) return;
+      await persist((d) => {
+        const fromIdx = d.categories.findIndex((c) => c.key === fromKey);
+        const toIdx = d.categories.findIndex((c) => c.key === toKey);
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = d.categories.splice(fromIdx, 1);
+        d.categories.splice(toIdx, 0, moved);
+      }, `Reorder categories`);
+      renderAll();
+    });
+
+    row.append(handle, colorPicker, hexInput, labelInput, delBtn);
     list.appendChild(row);
   });
 }
@@ -866,7 +919,7 @@ async function deleteCategory(key) {
 // ===================== Settings tab =====================
 
 function setupSettingsForm() {
-  const s = ghGetSettings() || {};
+  const s = ghGetSettings(APP_KEY) || {};
   document.getElementById('settings-token').value = s.token || '';
   document.getElementById('settings-owner').value = s.owner || '';
   document.getElementById('settings-repo').value = s.repo || '';
@@ -886,11 +939,11 @@ function setupSettingsForm() {
       setSettingsStatus('Token, owner and repo are required.', true);
       return;
     }
-    ghSaveSettings(settings);
+    ghSaveSettings(APP_KEY, settings);
     updateConfigBanner();
     setSettingsStatus('Testing connection…');
     try {
-      await ghTestConnection();
+      await ghTestConnection(APP_KEY);
       setSettingsStatus('Connected - loading data…');
       await loadFromGitHub();
       setSettingsStatus('Connected and synced.');
