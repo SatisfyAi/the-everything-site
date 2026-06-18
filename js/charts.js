@@ -1,85 +1,99 @@
-// Formats a minute count as H:MM (e.g. 48 -> "0:48", 95 -> "1:35").
+// Formats a minute count as a human-readable duration.
+// Shows only the parts that are non-zero:
+//   45  -> "45m"
+//   60  -> "1h"
+//   90  -> "1h 30m"
+//   120 -> "2h"
 function formatMinutesAsHM(totalMinutes) {
   const rounded = Math.round(totalMinutes);
   const h = Math.floor(rounded / 60);
   const m = rounded % 60;
-  return `${h}:${String(m).padStart(2, '0')}`;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }
 
-// Wraps text to fit within maxWidth, returning an array of lines.
-function wrapText(ctx, text, maxWidth) {
-  const words = text.split(' ');
-  const lines = [];
-  let line = '';
-  for (const word of words) {
-    const test = line ? line + ' ' + word : word;
-    if (ctx.measureText(test).width > maxWidth && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = test;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
-// Draws a donut chart styled like the user's existing monthly report image:
-// black background, segment time labels, center "Total" text, side legend.
+// Draws a time-tracking donut chart.
+// Clean ring with no in-segment labels. Legend on the right shows
+// "Label — H:MM" on each line (wrapping long labels to a second line
+// with the value aligned after).
 // `segments` is an array of { label, color, value } where value is in minutes.
 //
-// The canvas is sized dynamically: wide enough for the legend text, and tall
-// enough to fit either the donut or the (possibly multi-line) legend,
-// whichever needs more room. This keeps everything visible - and exportable
-// as a single image - no matter how long the category names are or how many
-// digits the totals have.
+// Canvas height grows dynamically so the legend is never clipped.
 function drawDonutChart(canvas, { title, segments }) {
   const fontFamily = "'Poppins', 'Segoe UI', sans-serif";
 
   const W = 1300;
-  const topMargin = 130; // space reserved for the title
-  const bottomMargin = 50;
+  const topMargin = 130;
+  const bottomMargin = 60;
   const sideMargin = 60;
 
-  const cx = 430;
-  const outerR = 290;
-  const innerR = 175;
+  const cx = 380;
+  const outerR = 270;
+  const innerR = 160;
   const donutDiameter = outerR * 2;
 
-  const legendX = cx + outerR + 90;
+  const legendX = cx + outerR + 100;
   const maxLegendWidth = W - legendX - sideMargin;
 
   const visible = segments.filter((s) => s.value > 0);
   const total = visible.reduce((sum, s) => sum + s.value, 0);
 
-  // Use the canvas's own context for measurement before we know the final size.
   const ctx = canvas.getContext('2d');
 
-  // ---- Work out the legend layout, shrinking the font if it's too tall ----
-  let legendFontSize = 36;
-  let legendLayout = computeLegendLayout(
-    ctx,
-    visible,
-    legendFontSize,
-    maxLegendWidth,
-    fontFamily,
-  );
-  while (
-    legendLayout.totalHeight > donutDiameter + 160 &&
-    legendFontSize > 22
-  ) {
-    legendFontSize -= 2;
-    legendLayout = computeLegendLayout(
-      ctx,
-      visible,
-      legendFontSize,
-      maxLegendWidth,
-      fontFamily,
-    );
+  // ---- Legend layout ----
+  // Each entry: label text wraps if needed, value on the last line after a separator
+  let fontSize = 36;
+  const minFontSize = 22;
+
+  function measureLegend(fs) {
+    ctx.font = `800 ${fs}px ${fontFamily}`;
+    const lineH = fs * 1.55;
+    const gap = fs * 0.7;
+    const sep = '  —  ';
+    let totalH = 0;
+    const entries = visible.map((seg) => {
+      // Try to fit "Label — H:MM" on one line; wrap label if needed
+      const valueStr = formatMinutesAsHM(seg.value);
+      const fullLine = seg.label + sep + valueStr;
+      const fullW = ctx.measureText(fullLine).width;
+      let lines;
+      if (fullW <= maxLegendWidth) {
+        lines = [fullLine];
+      } else {
+        // Wrap: put label line(s) then "— value" on last line
+        const words = seg.label.split(' ');
+        const wrapped = [];
+        let cur = '';
+        for (const w of words) {
+          const test = cur ? cur + ' ' + w : w;
+          if (ctx.measureText(test).width > maxLegendWidth && cur) {
+            wrapped.push(cur);
+            cur = w;
+          } else {
+            cur = test;
+          }
+        }
+        if (cur) wrapped.push(cur);
+        wrapped[wrapped.length - 1] += sep + valueStr;
+        lines = wrapped;
+      }
+      const h = lines.length * lineH;
+      totalH += h + gap;
+      return { seg, lines, h };
+    });
+    if (entries.length) totalH -= gap;
+    return { lineH, gap, entries, totalH };
   }
 
-  // ---- Finalize canvas size ----
-  const contentHeight = Math.max(donutDiameter, legendLayout.totalHeight);
+  let layout = measureLegend(fontSize);
+  while (layout.totalH > donutDiameter + 100 && fontSize > minFontSize) {
+    fontSize -= 2;
+    layout = measureLegend(fontSize);
+  }
+
+  // ---- Canvas size ----
+  const contentHeight = Math.max(donutDiameter, layout.totalH);
   const H = topMargin + contentHeight + bottomMargin;
   canvas.width = W;
   canvas.height = H;
@@ -96,31 +110,17 @@ function drawDonutChart(canvas, { title, segments }) {
 
   const cy = topMargin + contentHeight / 2;
 
-  // ---- Donut ----
+  // ---- Donut ring (no in-segment labels) ----
   if (total > 0 && visible.length === 1) {
-    // A single category covers the whole ring. Draw it as plain filled
-    // circles (no start/end seam) instead of an arc path, which would
-    // otherwise leave a visible spoke where the arc closes on itself.
-    const seg = visible[0];
     ctx.beginPath();
     ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
-    ctx.fillStyle = seg.color;
+    ctx.fillStyle = visible[0].color;
     ctx.fill();
 
     ctx.beginPath();
     ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
     ctx.fillStyle = '#000000';
     ctx.fill();
-
-    const midR = (outerR + innerR) / 2;
-    drawSegmentLabel(
-      ctx,
-      formatMinutesAsHM(seg.value),
-      cx,
-      cy - midR,
-      outerR - innerR,
-      fontFamily,
-    );
   } else if (total > 0) {
     let startAngle = -Math.PI / 2;
     visible.forEach((seg) => {
@@ -137,25 +137,9 @@ function drawDonutChart(canvas, { title, segments }) {
       ctx.strokeStyle = '#000000';
       ctx.stroke();
 
-      // Segment value label, sized to fit the slice's width at mid-radius
-      const midAngle = (startAngle + endAngle) / 2;
-      const midR = (outerR + innerR) / 2;
-      const lx = cx + Math.cos(midAngle) * midR;
-      const ly = cy + Math.sin(midAngle) * midR;
-      const chordWidth = 2 * midR * Math.sin(sweep / 2);
-      drawSegmentLabel(
-        ctx,
-        formatMinutesAsHM(seg.value),
-        lx,
-        ly,
-        chordWidth,
-        fontFamily,
-      );
-
       startAngle = endAngle;
     });
   } else {
-    // Empty ring placeholder
     ctx.beginPath();
     ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
     ctx.arc(cx, cy, innerR, 0, Math.PI * 2, true);
@@ -164,11 +148,11 @@ function drawDonutChart(canvas, { title, segments }) {
     ctx.fill();
   }
 
-  // ---- Center "Total" text, shrinking the value if it's too wide ----
+  // ---- Center total ----
   const totalLabel = formatMinutesAsHM(total);
-  let totalFontSize = 56;
+  let totalFontSize = 60;
   ctx.font = `800 ${totalFontSize}px ${fontFamily}`;
-  const maxTotalWidth = innerR * 2 - 50;
+  const maxTotalWidth = innerR * 2 - 40;
   while (
     ctx.measureText(totalLabel).width > maxTotalWidth &&
     totalFontSize > 26
@@ -180,58 +164,48 @@ function drawDonutChart(canvas, { title, segments }) {
   ctx.fillStyle = '#cfcfcf';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = `800 44px ${fontFamily}`;
-  ctx.fillText('Total', cx, cy - 30);
+  ctx.font = `800 40px ${fontFamily}`;
+  ctx.fillText('Total', cx, cy - totalFontSize * 0.65);
   ctx.font = `800 ${totalFontSize}px ${fontFamily}`;
-  ctx.fillText(totalLabel, cx, cy + Math.max(28, totalFontSize * 0.6));
+  ctx.fillText(totalLabel, cx, cy + totalFontSize * 0.5);
 
-  // ---- Legend, vertically centered alongside the donut ----
-  let legendY = cy - legendLayout.totalHeight / 2;
-  legendLayout.entries.forEach(({ seg, lines, height }) => {
-    ctx.fillStyle = seg.color;
-    ctx.font = `800 ${legendFontSize}px ${fontFamily}`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
+  // ---- Legend: "Label — H:MM", vertically centered ----
+  let legendY = cy - layout.totalH / 2;
+  ctx.textBaseline = 'top';
+
+  layout.entries.forEach(({ seg, lines, h }) => {
+    ctx.font = `800 ${fontSize}px ${fontFamily}`;
     lines.forEach((line, i) => {
-      ctx.fillText(line, legendX, legendY + i * legendLayout.lineHeight);
+      // Color each part of the line individually on the last line;
+      // pure label lines get the category color.
+      const sep = '  —  ';
+      const sepIdx = line.indexOf(sep);
+      if (sepIdx === -1) {
+        // Pure label line
+        ctx.fillStyle = seg.color;
+        ctx.textAlign = 'left';
+        ctx.fillText(line, legendX, legendY + i * layout.lineH);
+      } else {
+        // Line contains "label part — value"
+        const labelPart = line.slice(0, sepIdx);
+        const valuePart = line.slice(sepIdx + sep.length);
+        let x = legendX;
+
+        ctx.fillStyle = seg.color;
+        ctx.textAlign = 'left';
+        ctx.fillText(labelPart, x, legendY + i * layout.lineH);
+        x += ctx.measureText(labelPart).width;
+
+        ctx.fillStyle = '#666666';
+        ctx.fillText(sep, x, legendY + i * layout.lineH);
+        x += ctx.measureText(sep).width;
+
+        ctx.fillStyle = '#cfcfcf';
+        ctx.fillText(valuePart, x, legendY + i * layout.lineH);
+      }
     });
-    legendY += height + legendLayout.entryGap;
+    legendY += h + layout.gap;
   });
 
   return canvas;
-}
-
-// Lays out the legend at a given font size, returning per-entry wrapped
-// lines plus the total height the legend would occupy.
-function computeLegendLayout(ctx, visible, fontSize, maxWidth, fontFamily) {
-  const lineHeight = fontSize + 8;
-  const entryGap = fontSize;
-  ctx.font = `800 ${fontSize}px ${fontFamily}`;
-
-  let totalHeight = 0;
-  const entries = visible.map((seg) => {
-    const lines = wrapText(ctx, seg.label, maxWidth);
-    const height = lines.length * lineHeight;
-    totalHeight += height + entryGap;
-    return { seg, lines, height };
-  });
-  if (entries.length) totalHeight -= entryGap; // no trailing gap after the last entry
-
-  return { lineHeight, entryGap, entries, totalHeight };
-}
-
-// Draws a segment's value label, shrinking the font so it fits within
-// `availableWidth` (e.g. a thin slice with a large number of hours).
-function drawSegmentLabel(ctx, text, x, y, availableWidth, fontFamily) {
-  let fontSize = 38;
-  ctx.font = `800 ${fontSize}px ${fontFamily}`;
-  const maxWidth = Math.max(availableWidth - 12, 24);
-  while (ctx.measureText(text).width > maxWidth && fontSize > 16) {
-    fontSize -= 2;
-    ctx.font = `800 ${fontSize}px ${fontFamily}`;
-  }
-  ctx.fillStyle = '#000000';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, x, y);
 }
