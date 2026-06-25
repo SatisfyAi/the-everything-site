@@ -254,32 +254,6 @@
             placeholder="github_pat_..."
           />
         </div>
-        <div class="form-grid">
-          <div class="form-row">
-            <label for="settings-owner">Repo owner</label>
-            <input
-              type="text"
-              id="settings-owner"
-              placeholder="your-username"
-            />
-          </div>
-          <div class="form-row">
-            <label for="settings-repo">Repo name</label>
-            <input
-              type="text"
-              id="settings-repo"
-              placeholder="the-everyting-site_data"
-            />
-          </div>
-          <div class="form-row">
-            <label for="settings-branch">Branch</label>
-            <input type="text" id="settings-branch" placeholder="main" />
-          </div>
-          <div class="form-row">
-            <label for="settings-path">File path</label>
-            <input type="text" id="settings-path" placeholder="data.json" />
-          </div>
-        </div>
 
         <div class="entry-actions">
           <button class="btn btn-primary" id="settings-save" type="button">
@@ -295,7 +269,10 @@
           Your token is stored only in this browser's local storage - it is
           never sent anywhere except directly to
           <code>api.github.com</code>. If you use the app on another device,
-          you'll need to enter the token there too.
+          you'll need to enter the token there too. The repo owner, repo
+          name, branch and file path are fixed in
+          <code>js/app.js</code> (look for <code>REPO_CONFIG</code> near the
+          top) - edit them there if you need to change repos.
         </p>
       </div>
     </section>
@@ -304,6 +281,7 @@
     <script src="js/github.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/charts.js"></script>
+    <script src="js/shared-app.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>
