@@ -19,6 +19,8 @@ html,
 body {
   margin: 0;
   padding: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -289,6 +291,9 @@ input[type='date'],
 input[type='time'],
 input[type='password'] {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 11px 12px;
   border-radius: 10px;
   border: 1px solid var(--panel-border);
@@ -296,6 +301,21 @@ input[type='password'] {
   color: var(--text);
   font-family: inherit;
   font-size: 0.95rem;
+  color-scheme: dark;
+}
+
+/* Make the native calendar/clock picker icons visible on dark backgrounds.
+   color-scheme: dark handles Chrome/Edge; the ::-webkit-calendar-picker-indicator
+   filter is a fallback for browsers that don't fully respect color-scheme. */
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.6);
+  cursor: pointer;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator:hover,
+input[type='time']::-webkit-calendar-picker-indicator:hover {
+  filter: invert(1) opacity(1);
 }
 
 input[type='color'] {
@@ -370,6 +390,7 @@ input[type='color'] {
 
 .form-row {
   margin-bottom: 14px;
+  min-width: 0;
 }
 
 .checkbox-row {
@@ -527,6 +548,12 @@ td.empty {
 }
 
 /* ---------- Categories ---------- */
+
+#categories-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
 
 .category-row {
   display: flex;
