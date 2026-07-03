@@ -214,7 +214,7 @@ function updateEntryDuration() {
   const out = document.getElementById('entry-duration');
 
   if (!dateStr || !startStr || !endStr) {
-    out.textContent = '-';
+    out.textContent = '0m';
     return;
   }
   const start = new Date(`${dateStr}T${startStr}`);
