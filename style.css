@@ -288,10 +288,7 @@ label {
 
 input[type='text'],
 input[type='date'],
-input[type='time'] {
-  -webkit-appearance: none;
-  appearance: none;
-}
+input[type='time'],
 input[type='password'] {
   width: 100%;
   max-width: 100%;
@@ -310,7 +307,7 @@ input[type='password'] {
 /* Make the native calendar/clock picker icons visible on dark backgrounds.
    color-scheme: dark handles Chrome/Edge; the ::-webkit-calendar-picker-indicator
    filter is a fallback for browsers that don't fully respect color-scheme. */
-input[type='date']::-webkit-calendar-picker-indicator,
+/* input[type='date']::-webkit-calendar-picker-indicator,
 input[type='time']::-webkit-calendar-picker-indicator {
   filter: invert(1) opacity(0.6);
   cursor: pointer;
@@ -319,7 +316,7 @@ input[type='time']::-webkit-calendar-picker-indicator {
 input[type='date']::-webkit-calendar-picker-indicator:hover,
 input[type='time']::-webkit-calendar-picker-indicator:hover {
   filter: invert(1) opacity(1);
-}
+} */
 
 input[type='color'] {
   width: 44px;
