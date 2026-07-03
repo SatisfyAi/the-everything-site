@@ -16,7 +16,7 @@ repo being public.
 
 ## 1. Create the private data repo
 
-1. Create a **new private repo**, e.g. `the-everything-site_data`..
+1. Create a **new private repo**, e.g. `the-everything-site_data`.
 2. You don't need to add anything to it - the app will create `data.json`
    automatically the first time you save a session.
 
