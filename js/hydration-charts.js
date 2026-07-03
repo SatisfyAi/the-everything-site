@@ -79,7 +79,16 @@ function drawDonutChart(canvas, { title, segments }) {
     // Full ring - single color, no seam
     ctx.beginPath();
     ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
-    ctx.fillStyle = visible[0].color;
+    ctx.fillStyle = makeSliceFill(
+      ctx,
+      cx,
+      cy,
+      0,
+      outerR,
+      0,
+      Math.PI * 2,
+      visible[0].color,
+    );
     ctx.fill();
 
     ctx.beginPath();
@@ -96,7 +105,16 @@ function drawDonutChart(canvas, { title, segments }) {
       ctx.arc(cx, cy, outerR, startAngle, endAngle, false);
       ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
       ctx.closePath();
-      ctx.fillStyle = seg.color;
+      ctx.fillStyle = makeSliceFill(
+        ctx,
+        cx,
+        cy,
+        innerR,
+        outerR,
+        startAngle,
+        endAngle,
+        seg.color,
+      );
       ctx.fill();
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#000000';
@@ -152,7 +170,16 @@ function drawDonutChart(canvas, { title, segments }) {
     const labelWidth = ctx.measureText(labelText).width;
     const sepWidth = ctx.measureText(sep).width;
 
-    ctx.fillStyle = seg.color;
+    ctx.fillStyle = makeSliceFill(
+      ctx,
+      cx,
+      cy,
+      innerR,
+      outerR,
+      startAngle,
+      endAngle,
+      seg.color,
+    );
     ctx.fillText(labelText, legendX, legendY);
 
     ctx.fillStyle = '#666666';
