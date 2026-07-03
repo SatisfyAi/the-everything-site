@@ -225,16 +225,7 @@ function drawDonutChart(canvas, { title, segments }) {
     const labelWidth = ctx.measureText(labelText).width;
     const sepWidth = ctx.measureText(sep).width;
 
-    ctx.fillStyle = makeSliceFill(
-      ctx,
-      cx,
-      cy,
-      innerR,
-      outerR,
-      startAngle,
-      endAngle,
-      seg.color,
-    );
+    ctx.fillStyle = seg.color;
     ctx.fillText(labelText, legendX, legendY);
 
     ctx.fillStyle = '#666666';
