@@ -255,16 +255,7 @@ function drawDonutChart(canvas, { title, segments }) {
       const sepIdx = line.indexOf(sep);
       if (sepIdx === -1) {
         // Pure label line
-        ctx.fillStyle = makeSliceFill(
-          ctx,
-          cx,
-          cy,
-          innerR,
-          outerR,
-          startAngle,
-          endAngle,
-          seg.color,
-        );
+        ctx.fillStyle = seg.color;
         ctx.textAlign = 'left';
         ctx.fillText(line, legendX, legendY + i * layout.lineH);
       } else {
@@ -272,17 +263,7 @@ function drawDonutChart(canvas, { title, segments }) {
         const labelPart = line.slice(0, sepIdx);
         const valuePart = line.slice(sepIdx + sep.length);
         let x = legendX;
-
-        ctx.fillStyle = makeSliceFill(
-          ctx,
-          cx,
-          cy,
-          innerR,
-          outerR,
-          startAngle,
-          endAngle,
-          seg.color,
-        );
+        ctx.fillStyle = seg.color;
         ctx.textAlign = 'left';
         ctx.fillText(labelPart, x, legendY + i * layout.lineH);
         x += ctx.measureText(labelPart).width;
