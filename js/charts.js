@@ -13,6 +13,61 @@ function formatMinutesAsHM(totalMinutes) {
   return `${h}h ${m}m`;
 }
 
+// Lightens a hex color toward white by `amount` (0–1)
+function lightenColor(hex, amount) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const nr = Math.round(r + (255 - r) * amount);
+  const ng = Math.round(g + (255 - g) * amount);
+  const nb = Math.round(b + (255 - b) * amount);
+  return `rgb(${nr},${ng},${nb})`;
+}
+
+// Builds a vertical gradient scoped to one slice's own bounding box
+// (lighter at the top of the slice, solid base color at the bottom)
+function sliceGradient(ctx, cx, cy, innerR, outerR, startAngle, endAngle) {
+  const angles = [];
+  const steps = 12;
+  for (let i = 0; i <= steps; i++) {
+    angles.push(startAngle + ((endAngle - startAngle) * i) / steps);
+  }
+  let minY = Infinity,
+    maxY = -Infinity;
+  angles.forEach((a) => {
+    const yOuter = cy + outerR * Math.sin(a);
+    const yInner = cy + innerR * Math.sin(a);
+    minY = Math.min(minY, yOuter, yInner);
+    maxY = Math.max(maxY, yOuter, yInner);
+  });
+  return { minY, maxY };
+}
+
+function makeSliceFill(
+  ctx,
+  cx,
+  cy,
+  innerR,
+  outerR,
+  startAngle,
+  endAngle,
+  baseColor,
+) {
+  const { minY, maxY } = sliceGradient(
+    ctx,
+    cx,
+    cy,
+    innerR,
+    outerR,
+    startAngle,
+    endAngle,
+  );
+  const grad = ctx.createLinearGradient(cx, minY, cx, maxY);
+  grad.addColorStop(0, lightenColor(baseColor, 0.45));
+  grad.addColorStop(1, baseColor);
+  return grad;
+}
+
 // Draws a time-tracking donut chart.
 // Clean ring with no in-segment labels. Legend on the right shows
 // "Label - H:MM" on each line (wrapping long labels to a second line
@@ -114,7 +169,16 @@ function drawDonutChart(canvas, { title, segments }) {
   if (total > 0 && visible.length === 1) {
     ctx.beginPath();
     ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
-    ctx.fillStyle = visible[0].color;
+    ctx.fillStyle = makeSliceFill(
+      ctx,
+      cx,
+      cy,
+      0,
+      outerR,
+      0,
+      Math.PI * 2,
+      visible[0].color,
+    );
     ctx.fill();
 
     ctx.beginPath();
@@ -131,7 +195,16 @@ function drawDonutChart(canvas, { title, segments }) {
       ctx.arc(cx, cy, outerR, startAngle, endAngle, false);
       ctx.arc(cx, cy, innerR, endAngle, startAngle, true);
       ctx.closePath();
-      ctx.fillStyle = seg.color;
+      ctx.fillStyle = makeSliceFill(
+        ctx,
+        cx,
+        cy,
+        innerR,
+        outerR,
+        startAngle,
+        endAngle,
+        seg.color,
+      );
       ctx.fill();
       ctx.lineWidth = 3;
       ctx.strokeStyle = '#000000';
@@ -182,7 +255,16 @@ function drawDonutChart(canvas, { title, segments }) {
       const sepIdx = line.indexOf(sep);
       if (sepIdx === -1) {
         // Pure label line
-        ctx.fillStyle = seg.color;
+        ctx.fillStyle = makeSliceFill(
+          ctx,
+          cx,
+          cy,
+          innerR,
+          outerR,
+          startAngle,
+          endAngle,
+          seg.color,
+        );
         ctx.textAlign = 'left';
         ctx.fillText(line, legendX, legendY + i * layout.lineH);
       } else {
@@ -191,7 +273,16 @@ function drawDonutChart(canvas, { title, segments }) {
         const valuePart = line.slice(sepIdx + sep.length);
         let x = legendX;
 
-        ctx.fillStyle = seg.color;
+        ctx.fillStyle = makeSliceFill(
+          ctx,
+          cx,
+          cy,
+          innerR,
+          outerR,
+          startAngle,
+          endAngle,
+          seg.color,
+        );
         ctx.textAlign = 'left';
         ctx.fillText(labelPart, x, legendY + i * layout.lineH);
         x += ctx.measureText(labelPart).width;
