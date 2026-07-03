@@ -63,7 +63,8 @@ function makeSliceFill(
     endAngle,
   );
   const grad = ctx.createLinearGradient(cx, minY, cx, maxY);
-  grad.addColorStop(0, lightenColor(baseColor, 0.45));
+  grad.addColorStop(0, lightenColor(baseColor, 0.28));
+  grad.addColorStop(0.5, baseColor);
   grad.addColorStop(1, baseColor);
   return grad;
 }
