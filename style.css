@@ -772,4 +772,20 @@ input[type='number'] {
   .add-category-row {
     gap: 8px;
   }
+
+  /* Stack date/start/end time fields vertically instead of side-by-side,
+     and stop iOS Safari's native time widget from clipping in a half-width column. */
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* iOS Safari auto-zooms the page when a focused input's font-size is under
+     16px - bump it here so tapping a field doesn't trigger an unwanted zoom. */
+  input[type='text'],
+  input[type='date'],
+  input[type='time'],
+  input[type='password'],
+  input[type='number'] {
+    font-size: 16px;
+  }
 }
