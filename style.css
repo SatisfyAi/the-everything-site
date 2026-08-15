@@ -302,6 +302,7 @@ input[type='password'] {
   font-family: inherit;
   font-size: 0.95rem;
   color-scheme: dark;
+  overflow: hidden; /* clip iOS's internal native control rendering to the box */
 }
 
 /* Make the native calendar/clock picker icons visible on dark backgrounds.
@@ -341,12 +342,6 @@ input[type='color'] {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 14px;
-}
-
-@media (max-width: 400px) {
-  .form-grid-2 {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Time tracker has 3 fields; on narrow screens stack date full-width,
@@ -773,8 +768,12 @@ input[type='number'] {
     gap: 8px;
   }
 
-  /* Stack date/start/end time fields vertically instead of side-by-side,
+  /* Stack date/amount/start/end time fields vertically instead of side-by-side,
      and stop iOS Safari's native time widget from clipping in a half-width column. */
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
   .form-grid-3 {
     grid-template-columns: 1fr;
   }
