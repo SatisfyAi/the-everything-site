@@ -336,25 +336,38 @@ input[type='color'] {
   margin-bottom: 14px;
 }
 
-/* Two equal columns that stack to one column below 400px */
+/* Two equal-width fields that stack to one column on narrow screens.
+   Flexbox with flex-basis:0 is used instead of CSS Grid here because
+   Safari's native date/time controls don't reliably respect grid track
+   sizing (minmax(0, 1fr)) in the same way they respect flex-basis. */
 .form-grid-2 {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.form-grid-2 .form-row {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 /* Time tracker has 3 fields; on narrow screens stack date full-width,
-   then start/end share a row. Use a named grid for the 3-column case. */
+   then start/end share a row until the mobile breakpoint stacks everything. */
 .form-grid-3 {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 14px;
 }
 
+.form-grid-3 .form-row {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .form-grid-3 .form-row:first-child {
-  grid-column: 1 / -1;
+  flex-basis: 100%;
 }
 
 /* ---------- Drag-and-drop reordering ---------- */
@@ -770,12 +783,9 @@ input[type='number'] {
 
   /* Stack date/amount/start/end time fields vertically instead of side-by-side,
      and stop iOS Safari's native time widget from clipping in a half-width column. */
-  .form-grid-2 {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .form-grid-3 {
-    grid-template-columns: minmax(0, 1fr);
+  .form-grid-2 .form-row,
+  .form-grid-3 .form-row {
+    flex-basis: 100%;
   }
 
   /* iOS Safari auto-zooms the page when a focused input's font-size is under
