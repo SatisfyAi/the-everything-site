@@ -339,7 +339,7 @@ input[type='color'] {
 /* Two equal columns that stack to one column below 400px */
 .form-grid-2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
   margin-bottom: 14px;
 }
@@ -348,7 +348,7 @@ input[type='color'] {
    then start/end share a row. Use a named grid for the 3-column case. */
 .form-grid-3 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
   margin-bottom: 14px;
 }
@@ -771,11 +771,11 @@ input[type='number'] {
   /* Stack date/amount/start/end time fields vertically instead of side-by-side,
      and stop iOS Safari's native time widget from clipping in a half-width column. */
   .form-grid-2 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .form-grid-3 {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* iOS Safari auto-zooms the page when a focused input's font-size is under
