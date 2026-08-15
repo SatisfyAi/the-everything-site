@@ -399,6 +399,8 @@ input[type='color'] {
 .form-row {
   margin-bottom: 14px;
   min-width: 0;
+  width: 100%;
+  overflow: hidden; /* clip native date/time inputs that ignore width:100% and render wider than their box */
 }
 
 .checkbox-row {
