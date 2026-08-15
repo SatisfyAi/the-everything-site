@@ -291,7 +291,7 @@ input[type='date'],
 input[type='time'],
 input[type='password'] {
   width: 100%;
-  max-width: 100%;
+  max-width: calc(100vw - 64px);
   min-width: 0;
   box-sizing: border-box;
   padding: 11px 12px;
