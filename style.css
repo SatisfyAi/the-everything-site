@@ -291,7 +291,7 @@ input[type='date'],
 input[type='time'],
 input[type='password'] {
   width: 100%;
-  max-width: calc(100vw - 64px);
+  max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
   padding: 11px 12px;
@@ -303,6 +303,27 @@ input[type='password'] {
   font-size: 0.95rem;
   color-scheme: dark;
   overflow: hidden; /* clip iOS's internal native control rendering to the box */
+}
+
+/* Safari renders date/time inputs via internal shadow-DOM parts (one div per
+   digit segment) that carry their own padding, independent of the input's
+   own box. Zeroing that padding stops the internal content from pushing the
+   input wider/taller than the box we've defined for it.
+   @see https://gomakethings.com/articles/fixing-temporal-input-styling-in-safari/ */
+::-webkit-datetime-edit,
+::-webkit-datetime-edit-fields-wrapper,
+::-webkit-datetime-edit-text,
+::-webkit-datetime-edit-minute-field,
+::-webkit-datetime-edit-hour-field,
+::-webkit-datetime-edit-meridiem-field,
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-year-field {
+  padding: 0;
+}
+
+input::-webkit-inner-spin-button {
+  height: auto;
 }
 
 /* Make the native calendar/clock picker icons visible on dark backgrounds.
