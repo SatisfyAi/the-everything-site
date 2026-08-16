@@ -293,6 +293,7 @@ input[type='password'] {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  height: 44px; /* fixed height so empty (--:--) and filled date/time fields render identically */
   box-sizing: border-box;
   padding: 11px 12px;
   border-radius: 10px;
@@ -302,7 +303,7 @@ input[type='password'] {
   font-family: inherit;
   font-size: 0.95rem;
   color-scheme: dark;
-  overflow: hidden; /* clip iOS's internal native control rendering to the box */
+  overflow-x: hidden; /* clip horizontal bleed only - overflow-y stays visible so placeholder/icon content isn't hidden */
 }
 
 /* Safari renders date/time inputs via internal shadow-DOM parts (one div per
@@ -431,7 +432,7 @@ input[type='color'] {
   margin-bottom: 14px;
   min-width: 0;
   width: 100%;
-  overflow: hidden; /* clip native date/time inputs that ignore width:100% and render wider than their box */
+  overflow-x: hidden; /* clip native date/time inputs that ignore width:100% and render wider than their box */
 }
 
 .checkbox-row {
