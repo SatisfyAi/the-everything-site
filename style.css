@@ -326,6 +326,16 @@ input::-webkit-inner-spin-button {
   height: auto;
 }
 
+/* Safari's date/time inputs sometimes ignore width:100% outright and size
+   themselves off their internal content instead. Setting width to a
+   near-zero value forces the browser to fall back to min-width for actual
+   sizing, which Safari respects far more reliably than width alone. */
+input[type='date'],
+input[type='time'] {
+  width: 1px;
+  min-width: 100%;
+}
+
 /* Make the native calendar/clock picker icons visible on dark backgrounds.
    color-scheme: dark handles Chrome/Edge; the ::-webkit-calendar-picker-indicator
    filter is a fallback for browsers that don't fully respect color-scheme. */
