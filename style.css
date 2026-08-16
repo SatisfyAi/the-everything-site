@@ -293,7 +293,7 @@ input[type='password'] {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  height: 44px; /* fixed height so empty (--:--) and filled date/time fields render identically */
+  min-height: 44px; /* floor, not a cap - lets Safari's native date/time rendering take the space it needs */
   box-sizing: border-box;
   padding: 11px 12px;
   border-radius: 10px;
