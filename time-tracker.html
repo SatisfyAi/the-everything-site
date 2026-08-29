@@ -1,288 +1,296 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1"
-    />
-    <title>Time Tracker</title>
-    <link rel="apple-touch-icon" href="stopwatch-solid-full.svg" />
-    <link rel="icon" type="image/png" href="stopwatch-solid-full.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header class="app-header">
-      <a class="back-link" href="index.html" title="Back to hub">‹ Hub</a>
-      <h1>Time Tracker</h1>
-      <div class="sync-status" id="sync-status"></div>
-    </header>
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1"
+		/>
+		<title>Time Tracker</title>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent"
+		/>
+		<meta name="apple-mobile-web-app-title" content="Time Tracker" />
+		<link rel="manifest" href="manifest.json" />
+		<link rel="apple-touch-icon" href="stopwatch-solid-full.svg" />
+		<link rel="icon" type="image/png" href="stopwatch-solid-full.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;800&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="style.css" />
+	</head>
+	<body>
+		<header class="app-header">
+			<a class="back-link" href="index.html" title="Back to hub">‹ Hub</a>
+			<h1>Time Tracker</h1>
+			<div class="sync-status" id="sync-status"></div>
+		</header>
 
-    <div class="config-banner" id="config-banner" hidden>
-      GitHub isn't set up yet, so nothing will be saved permanently.
-      <button class="link" id="config-banner-link" type="button">
-        Go to Settings
-      </button>
-      to connect your repo.
-    </div>
+		<div class="config-banner" id="config-banner" hidden>
+			GitHub isn't set up yet, so nothing will be saved permanently.
+			<button class="link" id="config-banner-link" type="button">
+				Go to Settings
+			</button>
+			to connect your repo.
+		</div>
 
-    <nav class="tabs">
-      <button class="tab-btn active" data-tab="timer" type="button">
-        Timer
-      </button>
-      <button class="tab-btn" data-tab="entry" type="button">Add Entry</button>
-      <button class="tab-btn" data-tab="dashboard" type="button">
-        Dashboard
-      </button>
-      <button class="tab-btn" data-tab="history" type="button">History</button>
-      <button class="tab-btn" data-tab="categories" type="button">
-        Categories
-      </button>
-      <button class="tab-btn" data-tab="settings" type="button">
-        Settings
-      </button>
-    </nav>
+		<nav class="tabs">
+			<button class="tab-btn active" data-tab="timer" type="button">
+				Timer
+			</button>
+			<button class="tab-btn" data-tab="entry" type="button">Add Entry</button>
+			<button class="tab-btn" data-tab="dashboard" type="button">
+				Dashboard
+			</button>
+			<button class="tab-btn" data-tab="history" type="button">History</button>
+			<button class="tab-btn" data-tab="categories" type="button">
+				Categories
+			</button>
+			<button class="tab-btn" data-tab="settings" type="button">
+				Settings
+			</button>
+		</nav>
 
-    <!-- ===================== Timer ===================== -->
-    <section class="tab-panel active" id="tab-timer">
-      <div class="card">
-        <h2>What are you working on?</h2>
-        <div class="category-picker" id="timer-category-picker"></div>
+		<!-- ===================== Timer ===================== -->
+		<section class="tab-panel active" id="tab-timer">
+			<div class="card">
+				<h2>What are you working on?</h2>
+				<div class="category-picker" id="timer-category-picker"></div>
 
-        <div class="timer-state-label" id="timer-state-label">Ready</div>
-        <div class="timer-display" id="timer-display">00:00:00</div>
+				<div class="timer-state-label" id="timer-state-label">Ready</div>
+				<div class="timer-display" id="timer-display">00:00:00</div>
 
-        <div class="timer-controls">
-          <button class="btn btn-primary" id="timer-start" type="button">
-            Start
-          </button>
-          <button
-            class="btn btn-secondary"
-            id="timer-pause"
-            type="button"
-            hidden
-          >
-            Pause
-          </button>
-          <button
-            class="btn btn-primary"
-            id="timer-resume"
-            type="button"
-            hidden
-          >
-            Resume
-          </button>
-          <button class="btn btn-primary" id="timer-stop" type="button" hidden>
-            Stop &amp; Save
-          </button>
-          <button class="btn btn-danger" id="timer-cancel" type="button" hidden>
-            Discard
-          </button>
-        </div>
-      </div>
-    </section>
+				<div class="timer-controls">
+					<button class="btn btn-primary" id="timer-start" type="button">
+						Start
+					</button>
+					<button
+						class="btn btn-secondary"
+						id="timer-pause"
+						type="button"
+						hidden
+					>
+						Pause
+					</button>
+					<button
+						class="btn btn-primary"
+						id="timer-resume"
+						type="button"
+						hidden
+					>
+						Resume
+					</button>
+					<button class="btn btn-primary" id="timer-stop" type="button" hidden>
+						Stop &amp; Save
+					</button>
+					<button class="btn btn-danger" id="timer-cancel" type="button" hidden>
+						Discard
+					</button>
+				</div>
+			</div>
+		</section>
 
-    <!-- ===================== Add / Edit Entry ===================== -->
-    <section class="tab-panel" id="tab-entry">
-      <div class="card">
-        <h2>Log a session</h2>
-        <div class="category-picker" id="entry-category-picker"></div>
+		<!-- ===================== Add / Edit Entry ===================== -->
+		<section class="tab-panel" id="tab-entry">
+			<div class="card">
+				<h2>Log a session</h2>
+				<div class="category-picker" id="entry-category-picker"></div>
 
-        <div class="form-grid-3">
-          <div class="form-row">
-            <label for="entry-date">Date</label>
-            <input type="date" id="entry-date" />
-          </div>
-          <div class="form-row">
-            <label for="entry-start">Start time</label>
-            <input type="time" id="entry-start" />
-          </div>
-          <div class="form-row">
-            <label for="entry-end">End time</label>
-            <input type="time" id="entry-end" />
-          </div>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="entry-next-day" />
-          <label
-            for="entry-next-day"
-            style="margin: 0; text-transform: none; font-weight: 400"
-            >End time is on the next day</label
-          >
-        </div>
+				<div class="form-grid-3">
+					<div class="form-row">
+						<label for="entry-date">Date</label>
+						<input type="date" id="entry-date" />
+					</div>
+					<div class="form-row">
+						<label for="entry-start">Start time</label>
+						<input type="time" id="entry-start" />
+					</div>
+					<div class="form-row">
+						<label for="entry-end">End time</label>
+						<input type="time" id="entry-end" />
+					</div>
+				</div>
+				<div class="checkbox-row">
+					<input type="checkbox" id="entry-next-day" />
+					<label
+						for="entry-next-day"
+						style="margin: 0; text-transform: none; font-weight: 400"
+						>End time is on the next day</label
+					>
+				</div>
 
-        <div>
-          <label>Duration</label>
-          <div class="duration-readout" id="entry-duration">-</div>
-        </div>
+				<div>
+					<label>Duration</label>
+					<div class="duration-readout" id="entry-duration">-</div>
+				</div>
 
-        <div class="entry-actions">
-          <button class="btn btn-primary" id="entry-save" type="button">
-            Save entry
-          </button>
-          <button
-            class="btn btn-secondary"
-            id="entry-cancel-edit"
-            type="button"
-            hidden
-          >
-            Cancel edit
-          </button>
-        </div>
-      </div>
-    </section>
+				<div class="entry-actions">
+					<button class="btn btn-primary" id="entry-save" type="button">
+						Save entry
+					</button>
+					<button
+						class="btn btn-secondary"
+						id="entry-cancel-edit"
+						type="button"
+						hidden
+					>
+						Cancel edit
+					</button>
+				</div>
+			</div>
+		</section>
 
-    <!-- ===================== Dashboard ===================== -->
-    <section class="tab-panel" id="tab-dashboard">
-      <div class="card">
-        <div class="period-tabs">
-          <button class="period-btn" data-period="day" type="button">
-            Day
-          </button>
-          <button class="period-btn" data-period="week" type="button">
-            Week
-          </button>
-          <button class="period-btn active" data-period="month" type="button">
-            Month
-          </button>
-          <button class="period-btn" data-period="year" type="button">
-            Year
-          </button>
-          <button class="period-btn" data-period="all" type="button">
-            All time
-          </button>
-        </div>
+		<!-- ===================== Dashboard ===================== -->
+		<section class="tab-panel" id="tab-dashboard">
+			<div class="card">
+				<div class="period-tabs">
+					<button class="period-btn" data-period="day" type="button">
+						Day
+					</button>
+					<button class="period-btn" data-period="week" type="button">
+						Week
+					</button>
+					<button class="period-btn active" data-period="month" type="button">
+						Month
+					</button>
+					<button class="period-btn" data-period="year" type="button">
+						Year
+					</button>
+					<button class="period-btn" data-period="all" type="button">
+						All time
+					</button>
+				</div>
 
-        <div class="month-nav">
-          <button
-            class="icon-btn"
-            id="dashboard-prev"
-            type="button"
-            title="Earlier"
-          >
-            ‹
-          </button>
-          <div class="month-label" id="dashboard-range-label">-</div>
-          <button
-            class="icon-btn"
-            id="dashboard-next"
-            type="button"
-            title="Later"
-          >
-            ›
-          </button>
-        </div>
+				<div class="month-nav">
+					<button
+						class="icon-btn"
+						id="dashboard-prev"
+						type="button"
+						title="Earlier"
+					>
+						‹
+					</button>
+					<div class="month-label" id="dashboard-range-label">-</div>
+					<button
+						class="icon-btn"
+						id="dashboard-next"
+						type="button"
+						title="Later"
+					>
+						›
+					</button>
+				</div>
 
-        <div class="donut-wrap">
-          <canvas id="donut-canvas" width="1300" height="760"></canvas>
-        </div>
+				<div class="donut-wrap">
+					<div id="donut-canvas"></div>
+				</div>
 
-        <div class="download-row">
-          <button class="btn btn-secondary" id="download-donut" type="button">
-            Download as image
-          </button>
-        </div>
-      </div>
-    </section>
+				<div class="download-row">
+					<button class="btn btn-secondary" id="download-donut" type="button">
+						Download as image
+					</button>
+				</div>
+			</div>
+		</section>
 
-    <!-- ===================== History ===================== -->
-    <section class="tab-panel" id="tab-history">
-      <div class="card">
-        <h2>History</h2>
-        <div class="history-controls">
-          <label for="history-month-select">Show entries from</label>
-          <select id="history-month-select"></select>
-        </div>
+		<!-- ===================== History ===================== -->
+		<section class="tab-panel" id="tab-history">
+			<div class="card">
+				<h2>History</h2>
+				<div class="history-controls">
+					<label for="history-month-select">Show entries from</label>
+					<select id="history-month-select"></select>
+				</div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Duration</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="history-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>Date</th>
+								<th>Category</th>
+								<th>Start</th>
+								<th>End</th>
+								<th>Duration</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody id="history-tbody"></tbody>
+					</table>
+				</div>
+			</div>
+		</section>
 
-    <!-- ===================== Categories ===================== -->
-    <section class="tab-panel" id="tab-categories">
-      <div class="card">
-        <h2>Categories</h2>
-        <div id="categories-list"></div>
+		<!-- ===================== Categories ===================== -->
+		<section class="tab-panel" id="tab-categories">
+			<div class="card">
+				<h2>Categories</h2>
+				<div id="categories-list"></div>
 
-        <div class="add-category-row">
-          <input type="color" id="new-category-color" value="#3b82f6" />
-          <input
-            type="text"
-            id="new-category-label"
-            placeholder="New category name"
-          />
-          <button class="btn btn-primary" id="add-category-btn" type="button">
-            Add
-          </button>
-        </div>
-        <p class="help-text">
-          Categories with logged time can't be deleted, but you can rename them
-          or change their colour at any time - changes apply to all past entries
-          too.
-        </p>
-      </div>
-    </section>
+				<div class="add-category-row">
+					<input type="color" id="new-category-color" value="#3b82f6" />
+					<input
+						type="text"
+						id="new-category-label"
+						placeholder="New category name"
+					/>
+					<button class="btn btn-primary" id="add-category-btn" type="button">
+						Add
+					</button>
+				</div>
+				<p class="help-text">
+					Categories with logged time can't be deleted, but you can rename them
+					or change their colour at any time - changes apply to all past entries
+					too.
+				</p>
+			</div>
+		</section>
 
-    <!-- ===================== Settings ===================== -->
-    <section class="tab-panel" id="tab-settings">
-      <div class="card">
-        <h2>GitHub sync</h2>
-        <div class="form-row">
-          <label for="settings-token">Personal access token</label>
-          <input
-            type="password"
-            id="settings-token"
-            placeholder="github_pat_..."
-          />
-        </div>
+		<!-- ===================== Settings ===================== -->
+		<section class="tab-panel" id="tab-settings">
+			<div class="card">
+				<h2>GitHub sync</h2>
+				<div class="form-row">
+					<label for="settings-token">Personal access token</label>
+					<input
+						type="password"
+						id="settings-token"
+						placeholder="github_pat_..."
+					/>
+				</div>
 
-        <div class="entry-actions">
-          <button class="btn btn-primary" id="settings-save" type="button">
-            Save &amp; connect
-          </button>
-          <button class="btn btn-secondary" id="settings-reload" type="button">
-            Reload from GitHub
-          </button>
-        </div>
-        <div class="settings-status" id="settings-status"></div>
+				<div class="entry-actions">
+					<button class="btn btn-primary" id="settings-save" type="button">
+						Save &amp; connect
+					</button>
+					<button class="btn btn-secondary" id="settings-reload" type="button">
+						Reload from GitHub
+					</button>
+				</div>
+				<div class="settings-status" id="settings-status"></div>
 
-        <p class="help-text">
-          Your token is stored only in this browser's local storage - it is
-          never sent anywhere except directly to
-          <code>api.github.com</code>. If you use the app on another device,
-          you'll need to enter the token there too. The repo owner, repo name,
-          branch and file path are fixed in <code>js/app.js</code> (look for
-          <code>REPO_CONFIG</code> near the top) - edit them there if you need
-          to change repos.
-        </p>
-      </div>
-    </section>
+				<p class="help-text">
+					Your token is stored only in this browser's local storage - it is
+					never sent anywhere except directly to
+					<code>api.github.com</code>. If you use the app on another device,
+					you'll need to enter the token there too. The repo owner, repo name,
+					branch and file path are fixed in <code>js/app.js</code> (look for
+					<code>REPO_CONFIG</code> near the top) - edit them there if you need
+					to change repos.
+				</p>
+			</div>
+		</section>
 
-    <script src="js/categories.js"></script>
-    <script src="js/github.js"></script>
-    <script src="js/timer.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/shared-app.js"></script>
-    <script src="js/app.js"></script>
-  </body>
+		<script src="js/categories.js"></script>
+		<script src="js/github.js"></script>
+		<script src="js/timer.js"></script>
+		<script src="js/donut-chart.js"></script>
+		<script src="js/charts.js"></script>
+		<script src="js/shared-app.js"></script>
+		<script src="js/app.js"></script>
+	</body>
 </html>
