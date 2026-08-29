@@ -1,50 +1,50 @@
 .hub-grid {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 30px 20px 50px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 30px 20px 50px;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 20px;
 }
 
 .hub-card {
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius);
-  padding: 28px 24px;
-  text-decoration: none;
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-  transition:
-    border-color 0.15s,
-    transform 0.15s;
+	background: var(--panel);
+	border: 1px solid var(--panel-border);
+	border-radius: var(--radius);
+	padding: 28px 24px;
+	text-decoration: none;
+	color: var(--text);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	gap: 12px;
+	transition:
+		border-color 0.15s,
+		transform 0.15s;
 }
 
 .hub-card:hover,
 .hub-card:focus-visible {
-  border-color: var(--accent);
-  transform: translateY(-2px);
+	border-color: var(--accent);
+	transform: translateY(-2px);
 }
 
 .hub-card-icon {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
+	width: 56px;
+	height: 56px;
+	object-fit: contain;
 }
 
 .hub-card-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+	font-size: 1.25rem;
+	font-weight: 800;
+	letter-spacing: 0.3px;
 }
 
 .hub-card-desc {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text-dim);
-  line-height: 1.5;
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--text-dim);
+	line-height: 1.5;
 }
