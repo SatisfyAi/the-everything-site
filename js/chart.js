@@ -109,14 +109,17 @@ function drawRingChart(
 	const total = visible.reduce((sum, s) => sum + s.value, 0);
 
 	const ctx = _chartMeasureCtx;
-	const sep = '  -  ';
 
 	// ---- Legend layout ----
-	// Each entry tries to fit "Label - value" on one line; wraps the label
-	// across lines if it doesn't. A short label just never wraps, so this
-	// one path works for both apps' legends.
+	// Label and value sit in two columns: the label wraps within its own
+	// column on the left, and the value is right-aligned in its own column
+	// on the right - so a value never has to "fit after" whatever the label
+	// happened to wrap to, and there's no separator character needed
+	// between them at all.
 	let fontSize = 36;
 	const minFontSize = 22;
+	const legendRightEdge = W - sideMargin;
+	const columnGap = 24;
 
 	function measureLegend(fs) {
 		ctx.font = `800 ${fs}px ${CHART_FONT_FAMILY}`;
@@ -125,43 +128,31 @@ function drawRingChart(
 		let totalH = 0;
 		const entries = visible.map((seg) => {
 			const valueStr = formatTotal(seg.value);
-			const fullLine = seg.label + sep + valueStr;
-			let lines;
-			if (ctx.measureText(fullLine).width <= maxLegendWidth) {
-				lines = [{ label: seg.label, value: valueStr }];
-			} else {
-				const words = seg.label.split(' ');
-				const wrapped = [];
-				let cur = '';
-				for (const w of words) {
-					const test = cur ? cur + ' ' + w : w;
-					if (ctx.measureText(test).width > maxLegendWidth && cur) {
-						wrapped.push(cur);
-						cur = w;
-					} else {
-						cur = test;
-					}
-				}
-				if (cur) wrapped.push(cur);
+			const valueWidth = ctx.measureText(valueStr).width;
+			// The label's column shrinks to leave room for this entry's own
+			// value width, with a floor so a wide value can't crush it to nothing.
+			const labelMaxWidth = Math.max(
+				maxLegendWidth * 0.4,
+				maxLegendWidth - valueWidth - columnGap,
+			);
 
-				// The loop above only checked the label words. The last wrapped
-				// line still has to carry "  -  value" too - if that combination
-				// is too wide, give the value its own line instead of letting it
-				// run past the edge of the chart.
-				const lastLineWithValue = wrapped[wrapped.length - 1] + sep + valueStr;
-				if (ctx.measureText(lastLineWithValue).width <= maxLegendWidth) {
-					lines = wrapped.map((l, i) => ({
-						label: l,
-						value: i === wrapped.length - 1 ? valueStr : null,
-					}));
+			const words = seg.label.split(' ');
+			const labelLines = [];
+			let cur = '';
+			for (const w of words) {
+				const test = cur ? cur + ' ' + w : w;
+				if (ctx.measureText(test).width > labelMaxWidth && cur) {
+					labelLines.push(cur);
+					cur = w;
 				} else {
-					lines = wrapped.map((l) => ({ label: l, value: null }));
-					lines.push({ label: null, value: valueStr });
+					cur = test;
 				}
 			}
-			const h = lines.length * lineH;
+			if (cur) labelLines.push(cur);
+
+			const h = labelLines.length * lineH;
 			totalH += h + gap;
-			return { seg, lines, h };
+			return { seg, labelLines, valueStr, h };
 		});
 		if (entries.length) totalH -= gap;
 		return { lineH, gap, entries, totalH };
@@ -198,7 +189,7 @@ function drawRingChart(
 				defs += sliceGradientDef(gid, seg.color);
 				const d = ringSlicePath(cx, cy, innerR, outerR, startAngle, endAngle);
 				startAngle = endAngle;
-				return `<path d="${d}" fill="url(#${gid})" stroke="#000000" stroke-width="3" />`;
+				return `<path d="${d}" fill="url(#${gid})" />`;
 			})
 			.join('\n');
 	} else {
@@ -238,25 +229,20 @@ function drawRingChart(
 	// ---- Legend ----
 	let legendY = cy - layout.totalH / 2;
 	const legendLines = [];
-	layout.entries.forEach(({ seg, lines, h }) => {
-		lines.forEach((line, i) => {
+	layout.entries.forEach(({ seg, labelLines, valueStr, h }) => {
+		labelLines.forEach((line, i) => {
 			const baseline = legendY + i * layout.lineH + fontSize * 0.8;
-			if (line.label === null) {
-				// The value didn't fit alongside the last wrapped label line, so
-				// it's on its own line - just the muted value color, no dot color.
-				legendLines.push(
-					`<text x="${legendX}" y="${baseline}" font-family="${CHART_FONT_FAMILY}" font-weight="800" font-size="${fontSize}" fill="#cfcfcf">${escapeXml(line.value)}</text>`,
-				);
-			} else if (line.value === null) {
-				legendLines.push(
-					`<text x="${legendX}" y="${baseline}" font-family="${CHART_FONT_FAMILY}" font-weight="800" font-size="${fontSize}" fill="${seg.color}">${escapeXml(line.label)}</text>`,
-				);
-			} else {
-				legendLines.push(
-					`<text x="${legendX}" y="${baseline}" font-family="${CHART_FONT_FAMILY}" font-weight="800" font-size="${fontSize}"><tspan fill="${seg.color}">${escapeXml(line.label)}</tspan><tspan fill="#666666">${sep}</tspan><tspan fill="#cfcfcf">${escapeXml(line.value)}</tspan></text>`,
-				);
-			}
+			legendLines.push(
+				`<text x="${legendX}" y="${baseline}" font-family="${CHART_FONT_FAMILY}" font-weight="800" font-size="${fontSize}" fill="${seg.color}">${escapeXml(line)}</text>`,
+			);
 		});
+		// Right-aligned, vertically centered against this entry's whole label
+		// height so a 2-line-wrapped label doesn't leave the value looking
+		// stuck to the top or bottom edge.
+		const valueBaseline = legendY + h / 2 - layout.lineH / 2 + fontSize * 0.8;
+		legendLines.push(
+			`<text x="${legendRightEdge}" y="${valueBaseline}" text-anchor="end" font-family="${CHART_FONT_FAMILY}" font-weight="800" font-size="${fontSize}" fill="#cfcfcf">${escapeXml(valueStr)}</text>`,
+		);
 		legendY += h + layout.gap;
 	});
 
