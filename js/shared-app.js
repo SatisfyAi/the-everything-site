@@ -543,11 +543,13 @@ function formatRangeTitle(start, end, period) {
 	return `${start.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} – ${lastDay.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}`;
 }
 
-// Updates the dashboard's donut chart + range label + nav button states.
+// Updates the dashboard's chart + range label + nav button states.
 // `getTotals(range)` returns a { categoryKey: value } map for the given
 // range, letting each app define its own filtering/summing
 // (Time Tracker sums minutes by startDate, Hydration sums ml by date).
-function renderDashboardCommon(getTotals) {
+// `chartOptions` is { formatTotal, innerRadiusRatio } - each app supplies
+// its own value formatter and picks pie (0) vs donut (>0).
+function renderDashboardCommon(getTotals, chartOptions) {
 	const range = getDashboardRange();
 	const totals = getTotals(range);
 
@@ -556,9 +558,11 @@ function renderDashboardCommon(getTotals) {
 		color: c.color,
 		value: totals[c.key] || 0,
 	}));
-	drawDonutChart(document.getElementById('donut-canvas'), {
+	drawRingChart(document.getElementById('donut-canvas'), {
 		title: range.title,
 		segments,
+		formatTotal: chartOptions.formatTotal,
+		innerRadiusRatio: chartOptions.innerRadiusRatio,
 	});
 
 	document.getElementById('dashboard-range-label').textContent = range.title;

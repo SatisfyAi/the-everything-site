@@ -26,6 +26,21 @@ const state = {
 let timerSelectedCategory = null;
 let entrySelectedCategory = null;
 
+// Formats a minute count as a human-readable duration.
+// Shows only the parts that are non-zero:
+//   45  -> "45m"
+//   60  -> "1h"
+//   90  -> "1h 30m"
+//   120 -> "2h"
+function formatMinutesAsHM(totalMinutes) {
+	const rounded = Math.round(totalMinutes);
+	const h = Math.floor(rounded / 60);
+	const m = rounded % 60;
+	if (h === 0) return `${m}m`;
+	if (m === 0) return `${h}h`;
+	return `${h}h ${m}m`;
+}
+
 // Time Tracker sessions are dated by their start time.
 function getItemDate(session) {
 	return new Date(session.startDate);
@@ -304,15 +319,18 @@ function sameDay(a, b) {
 // ===================== Dashboard tab =====================
 
 function renderDashboardTab() {
-	renderDashboardCommon((range) => {
-		const totals = {};
-		state.data.sessions.forEach((s) => {
-			const d = getItemDate(s);
-			if (range.start && (d < range.start || d >= range.end)) return;
-			totals[s.category] = (totals[s.category] || 0) + s.minutes;
-		});
-		return totals;
-	});
+	renderDashboardCommon(
+		(range) => {
+			const totals = {};
+			state.data.sessions.forEach((s) => {
+				const d = getItemDate(s);
+				if (range.start && (d < range.start || d >= range.end)) return;
+				totals[s.category] = (totals[s.category] || 0) + s.minutes;
+			});
+			return totals;
+		},
+		{ formatTotal: formatMinutesAsHM, innerRadiusRatio: 0.593 },
+	);
 }
 
 // ===================== History tab =====================

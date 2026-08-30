@@ -27,6 +27,15 @@ const state = {
 let entrySelectedCategory = null;
 let entryAmount = null;
 
+// Formats a millilitre amount for display.
+// Plain ml below 1000 (e.g. "250ml"); switches to litres with one decimal
+// at 1000+ (e.g. "1.2L"), which keeps large daily/weekly/yearly totals readable.
+function formatMl(totalMl) {
+	const rounded = Math.round(totalMl);
+	if (rounded < 1000) return `${rounded}ml`;
+	return `${(rounded / 1000).toFixed(1)}L`;
+}
+
 // Hydration entries are dated by their logged timestamp.
 function getItemDate(entry) {
 	return new Date(entry.date);
@@ -190,15 +199,18 @@ function resetEntryForm() {
 // ===================== Dashboard tab =====================
 
 function renderDashboardTab() {
-	renderDashboardCommon((range) => {
-		const totals = {};
-		state.data.entries.forEach((e) => {
-			const d = getItemDate(e);
-			if (range.start && (d < range.start || d >= range.end)) return;
-			totals[e.category] = (totals[e.category] || 0) + e.amount;
-		});
-		return totals;
-	});
+	renderDashboardCommon(
+		(range) => {
+			const totals = {};
+			state.data.entries.forEach((e) => {
+				const d = getItemDate(e);
+				if (range.start && (d < range.start || d >= range.end)) return;
+				totals[e.category] = (totals[e.category] || 0) + e.amount;
+			});
+			return totals;
+		},
+		{ formatTotal: formatMl, innerRadiusRatio: 0 },
+	);
 }
 
 // ===================== History tab =====================
