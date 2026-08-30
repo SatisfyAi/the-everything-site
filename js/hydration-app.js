@@ -2,7 +2,7 @@
 
 const APP_KEY = 'hydrationtracker';
 const ITEMS_KEY = 'entries';
-const PRESET_AMOUNTS = [100, 200, 400, 500, 800, 1000];
+const PRESET_AMOUNTS = [200, 400, 500, 1000, 1500, 2000];
 
 // Repo details are fixed since they won't change device to device.
 // >>> EDIT THESE THREE VALUES to match your own GitHub repo <<<
