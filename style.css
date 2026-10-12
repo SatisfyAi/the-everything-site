@@ -19,7 +19,7 @@
 	--danger: #ff6b6b;
 	--grid: #262d39;
 	--shadow:
-		0 1px 0 rgba(62, 27, 27, 0.03) inset, 0 8px 24px rgba(0, 0, 0, 0.25);
+		0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 8px 24px rgba(0, 0, 0, 0.25);
 	--r: 18px;
 	color-scheme: dark;
 }
@@ -1110,6 +1110,11 @@ input.cell {
 	/* nav becomes a bottom tab bar */
 	.top {
 		padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+		/* backdrop-filter would make the fixed bottom nav position itself
+		   inside the header instead of the screen */
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+		background: var(--bg);
 	}
 	#nav {
 		position: fixed;

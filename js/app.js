@@ -159,7 +159,7 @@ function renderToday() {
 	const w = liveWorked(day);
 	$('#hubClock').innerHTML =
 		`<div class="p-head"><span class="p-title">Job clock</span><button class="link" type="button" data-v="clock">Open</button></div>` +
-		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : '–'} <small>${day.e ? 'worked' : 'so far'}</small></div><div class="dots">${dots}</div>` +
+		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : 'nothing'} <small>${day.e ? 'worked' : 'so far'}</small></div><div class="dots">${dots}</div>` +
 		(nx
 			? `<button class="btn sm" type="button" data-act="hub-stamp"><span id="hubStampLbl">${nx.n} · ${shiftTime(nx)}</span></button>`
 			: '<div class="muted">Day complete</div>');
