@@ -83,6 +83,7 @@ function sliceGradientDef(id, baseColor) {
 //   formatTotal(number)  - formats the center total label (donut only)
 //   innerRadiusRatio     - 0 for a pie; 0-1 for a donut (hole this fraction
 //                          of outerR, with a center total)
+let _ringUid = 0;
 function drawRingChart(
 	container,
 	{ title, segments, formatTotal, innerRadiusRatio },
@@ -104,6 +105,9 @@ function drawRingChart(
 	const total = visible.reduce((sum, s) => sum + s.value, 0);
 
 	const ctx = _chartMeasureCtx;
+	// Unique per drawing: charts in hidden sections share the document, and a
+	// duplicate gradient id would resolve to the hidden (unrendered) one.
+	const uid = 'g' + ++_ringUid + '-';
 
 	// ---- Legend layout ----
 	let fontSize = 36;
@@ -161,7 +165,7 @@ function drawRingChart(
 	let ringMarkup;
 
 	if (total > 0 && visible.length === 1) {
-		const gid = 'chart-grad-0';
+		const gid = uid + '0';
 		defs += sliceGradientDef(gid, visible[0].color);
 		ringMarkup = `<circle cx="${cx}" cy="${cy}" r="${outerR}" fill="url(#${gid})" />`;
 		if (innerR > 0) {
@@ -173,7 +177,7 @@ function drawRingChart(
 			.map((seg, i) => {
 				const sweep = (seg.value / total) * Math.PI * 2;
 				const endAngle = startAngle + sweep;
-				const gid = `chart-grad-${i}`;
+				const gid = uid + i;
 				defs += sliceGradientDef(gid, seg.color);
 				const d = ringSlicePath(cx, cy, innerR, outerR, startAngle, endAngle);
 				startAngle = endAngle;
