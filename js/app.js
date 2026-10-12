@@ -1,505 +1,297 @@
-// ===================== State =====================
+// ===================== App core =====================
+// State, navigation, the Today overview, the status banner and boot.
+// The sections live in hydration.js, work.js, clock.js and settings.js.
 
-const APP_KEY = 'timetracker';
-const ITEMS_KEY = 'sessions';
+const VIEWS = ['today', 'water', 'discord', 'clock', 'settings'];
 
-// Repo details are fixed since they won't change device to device.
-// >>> EDIT THESE THREE VALUES to match your own GitHub repo <<<
-const REPO_CONFIG = {
-	owner: 'SatisfyAi',
-	repo: 'the-everything-site_data',
-	branch: 'main',
-	path: 'data.json',
+// Current data for each file (read-only; every change goes through Store.commit).
+const S = { work: null, hyd: null, clk: null };
+
+let cur = 'today';
+let lastRefresh = Date.now();
+let lastDay = ymd(new Date());
+let runtimeError = null;
+let localBannerDismissed = false;
+
+function rebuild() {
+	S.work = Store.get('work');
+	S.hyd = Store.get('hydration');
+	S.clk = Store.get('clock');
+}
+
+/* ---------- navigation ---------- */
+function show(v) {
+	if (VIEWS.indexOf(v) < 0) v = 'today';
+	cur = v;
+	document.body.dataset.v = v;
+	$$('.view').forEach((x) => {
+		x.hidden = x.id !== 'v-' + v;
+	});
+	$$('#nav a').forEach((a) => a.classList.toggle('on', a.dataset.v === v));
+	$('#gear').classList.toggle('on', v === 'settings');
+	try {
+		localStorage.setItem('daybook-view', v);
+	} catch (e) {}
+	try {
+		if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
+	} catch (e) {}
+	window.scrollTo(0, 0);
+	renderAll(v === 'settings');
+}
+
+/* ---------- banner + sync status ---------- */
+const SYNC_TEXT = {
+	loading: 'Loading…',
+	synced: 'Synced',
+	saving: 'Saving…',
+	error: 'Sync problem',
+	local: 'This device only',
 };
 
-function EMPTY_DATA() {
-	return { categories: DEFAULT_CATEGORIES.slice(), sessions: [] };
+function renderSyncStatus() {
+	const s = Store.status;
+	const el = $('#sync');
+	el.textContent = SYNC_TEXT[s] || s;
+	el.className =
+		'syncbtn' + (s === 'synced' ? ' ok' : s === 'error' ? ' bad' : '');
 }
 
-const state = {
-	data: EMPTY_DATA(),
-	sha: null,
-	dashboard: { period: 'month', offset: 0 },
-	editingId: null,
-};
-
-let timerSelectedCategory = null;
-let entrySelectedCategory = null;
-
-// Formats a minute count as a human-readable duration.
-// Shows only the parts that are non-zero:
-//   45  -> "45m"
-//   60  -> "1h"
-//   90  -> "1h 30m"
-//   120 -> "2h"
-function formatMinutesAsHM(totalMinutes) {
-	const rounded = Math.round(totalMinutes);
-	const h = Math.floor(rounded / 60);
-	const m = rounded % 60;
-	if (h === 0) return `${m}m`;
-	if (m === 0) return `${h}h`;
-	return `${h}h ${m}m`;
-}
-
-// Time Tracker sessions are dated by their start time.
-function getItemDate(session) {
-	return new Date(session.startDate);
-}
-
-// ===================== Init =====================
-// (Global error reporting lives in shared-app.js)
-
-document.addEventListener('DOMContentLoaded', init);
-
-async function init() {
-	setupTabs();
-	setupSettingsForm();
-	setupTimerTab();
-	setupEntryTab();
-	setupDashboardNav('TT');
-	setupHistoryTab();
-	setupCategoriesTab();
-	updateConfigBanner();
-
-	if (ghConfigured(APP_KEY)) {
-		setStatus('Loading…', 'busy');
-		try {
-			await loadFromGitHub();
-			setStatus('Synced', 'ok');
-		} catch (e) {
-			setStatus('Load failed: ' + e.message, 'error');
-		}
+function renderBanner() {
+	const el = $('#banner');
+	const msg = $('#bannerMsg');
+	const btn = $('#bannerBtn');
+	let kind = null;
+	if (runtimeError) {
+		kind = 'err';
+		msg.textContent = runtimeError;
+		btn.textContent = 'Dismiss';
+		btn.dataset.act = 'dismiss';
+	} else if (Store.status === 'error') {
+		kind = 'err';
+		const e = Store.lastError;
+		const auth =
+			e && (e.status === 401 || e.status === 403 || e.status === 404);
+		msg.textContent = e
+			? `Couldn't sync with GitHub: ${e.message}${Store.queue.length ? ' Your changes are kept and will be saved once it works.' : ''}`
+			: "Couldn't sync with GitHub.";
+		btn.textContent = auth ? 'Open settings' : 'Retry';
+		btn.dataset.act = auth ? 'settings' : 'retry';
+	} else if (Store.mode === 'local' && !localBannerDismissed) {
+		kind = 'info';
+		msg.textContent =
+			"GitHub isn't set up yet, so data is saved on this device only.";
+		btn.textContent = 'Connect';
+		btn.dataset.act = 'settings';
 	}
-
-	renderAll();
-	startTimerTick();
+	el.hidden = !kind;
+	el.className = 'banner' + (kind === 'err' ? ' err' : '');
 }
 
-function renderAll() {
-	renderTimerTab();
-	renderEntryTab();
-	renderDashboardTab();
-	renderHistoryTab();
-	renderCategoriesTab();
-}
+window.addEventListener('error', (e) => {
+	runtimeError = `Error in ${(e.filename || 'script').split('/').pop()} line ${e.lineno || '?'}: ${e.message || 'unknown error'}`;
+	console.error(e.error || e.message);
+	try {
+		renderBanner();
+	} catch (_) {}
+});
+window.addEventListener('unhandledrejection', (e) => {
+	const r = e.reason;
+	runtimeError = `Unhandled error: ${(r && r.message) || (typeof r === 'string' ? r : 'promise rejected')}`;
+	console.error(r);
+	try {
+		renderBanner();
+	} catch (_) {}
+});
 
-// ===================== Timer tab =====================
+/* ---------- Today ---------- */
+function renderToday() {
+	$('#todayDate').textContent = loc(new Date(), {
+		weekday: 'long',
+		day: 'numeric',
+		month: 'long',
+	});
 
-function setupTimerTab() {
-	document.getElementById('timer-start').onclick = () => {
-		if (!timerSelectedCategory) {
-			setStatus('Pick a category first.', 'error');
-			return;
-		}
-		timerStart(timerSelectedCategory);
-		renderTimerTab();
-	};
-	document.getElementById('timer-pause').onclick = () => {
-		timerPause();
-		renderTimerTab();
-	};
-	document.getElementById('timer-resume').onclick = () => {
-		timerResume();
-		renderTimerTab();
-	};
-	document.getElementById('timer-stop').onclick = async () => {
-		const result = timerStop();
-		if (result && result.discarded) {
-			setStatus(
-				`Only ${result.elapsedSeconds}s - not saved (entries under 1 minute are discarded).`,
-				'warn',
-			);
-		} else if (result) {
-			await persist(
-				(d) => d.sessions.push(result),
-				`Add session: ${result.category}`,
-			);
-			renderDashboardTab();
-			renderHistoryTab();
-		}
-		renderTimerTab();
-	};
-	document.getElementById('timer-cancel').onclick = () => {
-		if (confirm('Discard this timer without saving it?')) {
-			timerCancel();
-			renderTimerTab();
-		}
-	};
-}
+	// hydration
+	const { by, total } = hydTotals(todayHydEntries());
+	const goal = hydGoal();
+	const den = Math.max(total, goal);
+	const seg = hydStackOrder(by)
+		.filter((c) => by[c.key])
+		.map(
+			(c) =>
+				`<span style="width:${((by[c.key] / den) * 100).toFixed(1)}%;background:${normHex(c.color)}"></span>`,
+		)
+		.join('');
+	const q = quickDrink();
+	$('#hubWater').innerHTML =
+		`<div class="p-head"><span class="p-title">Hydration</span><button class="link" type="button" data-v="water">Open</button></div>` +
+		`<div class="p-big">${formatMl(total)} <small>of ${formatMl(goal)}</small></div><div class="seg">${seg}</div>` +
+		(q
+			? `<button class="btn sm" type="button" data-act="quick-water">+ ${tapAmount(q.key)}ml ${esc(q.label.toLowerCase())}</button>`
+			: '');
 
-function renderTimerTab() {
-	if (!timerSelectedCategory && state.data.categories.length) {
-		timerSelectedCategory = state.data.categories[0].key;
-	}
-
+	// Discord time
 	const ts = timerGetState();
-	const selKey = ts ? ts.category : timerSelectedCategory;
-	const locked = !!ts; // can't switch categories while a timer is active
-
-	renderCategoryPicker(
-		document.getElementById('timer-category-picker'),
-		selKey,
-		(key) => {
-			timerSelectedCategory = key;
-			renderTimerTab();
-		},
-		locked,
-	);
-
-	document.getElementById('timer-display').textContent = formatHMS(
-		timerElapsedSeconds(ts),
-	);
-
-	const startBtn = document.getElementById('timer-start');
-	const pauseBtn = document.getElementById('timer-pause');
-	const resumeBtn = document.getElementById('timer-resume');
-	const stopBtn = document.getElementById('timer-stop');
-	const cancelBtn = document.getElementById('timer-cancel');
-	const statusEl = document.getElementById('timer-state-label');
-
-	if (!ts) {
-		startBtn.hidden = false;
-		pauseBtn.hidden = true;
-		resumeBtn.hidden = true;
-		stopBtn.hidden = true;
-		cancelBtn.hidden = true;
-		statusEl.textContent = 'Ready';
-	} else if (ts.running) {
-		startBtn.hidden = true;
-		pauseBtn.hidden = false;
-		resumeBtn.hidden = true;
-		stopBtn.hidden = false;
-		cancelBtn.hidden = false;
-		statusEl.textContent = 'Running';
+	const t0 = sod(new Date()).getTime();
+	const t1 = addD(sod(new Date()), 1).getTime();
+	let body;
+	if (ts) {
+		body =
+			`<div class="p-big" id="hubTimer">${formatHMS(timerElapsedSeconds(ts))}</div>` +
+			`<div class="muted">${ts.running ? 'Running' : 'Paused'} · ${esc(workCat(ts.category).label)}</div>` +
+			`<button class="btn sm" type="button" data-v="discord">Open timer</button>`;
 	} else {
-		startBtn.hidden = true;
-		pauseBtn.hidden = true;
-		resumeBtn.hidden = false;
-		stopBtn.hidden = false;
-		cancelBtn.hidden = false;
-		statusEl.textContent = 'Paused';
+		body =
+			`<div class="p-big">${formatMinutesAsHM(workMinutesBetween(t0, t1))} <small>today</small></div>` +
+			`<div class="muted">${formatMinutesAsHM(workMinutesBetween(mondayOf(new Date()).getTime(), t1))} this week</div>` +
+			`<button class="btn sm" type="button" data-v="discord">Start timer</button>`;
 	}
+	$('#hubWork').innerHTML =
+		`<div class="p-head"><span class="p-title">Discord time</span><button class="link" type="button" data-v="discord">Open</button></div>` +
+		body;
+
+	// job clock
+	const day = clkDay(ymd(new Date())) || {};
+	const nx = nextStep(day);
+	const dots = CLK_STEPS.map(
+		(st) => `<i class="dot${day[st.k] ? ' on' : ''}" title="${st.n}"></i>`,
+	).join('');
+	const w = liveWorked(day);
+	$('#hubClock').innerHTML =
+		`<div class="p-head"><span class="p-title">Job clock</span><button class="link" type="button" data-v="clock">Open</button></div>` +
+		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : 'nothing'} <small>${day.e ? 'worked' : 'so far'}</small></div><div class="dots">${dots}</div>` +
+		(nx
+			? `<button class="btn sm" type="button" data-act="hub-stamp"><span id="hubStampLbl">${nx.n} · ${shiftTime(nx)}</span></button>`
+			: '<div class="muted">Day complete</div>');
 }
 
-function startTimerTick() {
-	setInterval(() => {
-		const ts = timerGetState();
-		if (ts && ts.running) {
-			document.getElementById('timer-display').textContent = formatHMS(
-				timerElapsedSeconds(ts),
-			);
-		}
-	}, 1000);
+/* ---------- render everything that is visible ---------- */
+function renderAll(forceSettings) {
+	renderSyncStatus();
+	renderBanner();
+	renderToday();
+	if (cur === 'water') renderWater();
+	if (cur === 'discord') renderWork();
+	if (cur === 'clock') renderClock(false);
+	if (cur === 'settings') renderSettings(!!forceSettings);
 }
 
-// ===================== Add / edit entry tab =====================
-
-function setupEntryTab() {
-	document.getElementById('entry-date').valueAsDate = new Date();
-
-	['entry-start', 'entry-end', 'entry-next-day'].forEach((id) => {
-		document.getElementById(id).addEventListener('input', updateEntryDuration);
-	});
-
-	document.getElementById('entry-save').onclick = saveManualEntry;
-	document.getElementById('entry-cancel-edit').onclick = resetEntryForm;
-
-	updateEntryDuration();
-}
-
-function renderEntryTab() {
-	if (!entrySelectedCategory && state.data.categories.length) {
-		entrySelectedCategory = state.data.categories[0].key;
-	}
-	renderCategoryPicker(
-		document.getElementById('entry-category-picker'),
-		entrySelectedCategory,
-		(key) => {
-			entrySelectedCategory = key;
-			renderEntryTab();
-		},
-	);
-}
-
-function updateEntryDuration() {
-	const dateStr = document.getElementById('entry-date').value;
-	const startStr = document.getElementById('entry-start').value;
-	const endStr = document.getElementById('entry-end').value;
-	const nextDay = document.getElementById('entry-next-day').checked;
-	const out = document.getElementById('entry-duration');
-
-	if (!dateStr || !startStr || !endStr) {
-		out.textContent = '0m';
-		return;
-	}
-	const start = new Date(`${dateStr}T${startStr}`);
-	let end = new Date(`${dateStr}T${endStr}`);
-	if (nextDay || end <= start) end = new Date(end.getTime() + 24 * 3600 * 1000);
-	const minutes = Math.round((end - start) / 60000);
-	out.textContent = formatMinutesAsHM(minutes);
-}
-
-async function saveManualEntry() {
-	const dateStr = document.getElementById('entry-date').value;
-	const startStr = document.getElementById('entry-start').value;
-	const endStr = document.getElementById('entry-end').value;
-	const nextDay = document.getElementById('entry-next-day').checked;
-
-	if (!dateStr || !startStr || !endStr || !entrySelectedCategory) {
-		setStatus('Fill in category, date, start and end time.', 'error');
-		return;
-	}
-
-	const start = new Date(`${dateStr}T${startStr}`);
-	let end = new Date(`${dateStr}T${endStr}`);
-	if (nextDay || end <= start) end = new Date(end.getTime() + 24 * 3600 * 1000);
-	const minutes = Math.round((end - start) / 60000);
-
-	if (minutes <= 0) {
-		setStatus('End time must be after start time.', 'error');
-		return;
-	}
-
-	if (state.editingId) {
-		const id = state.editingId;
-		await persist((d) => {
-			const idx = d.sessions.findIndex((s) => s.id === id);
-			if (idx >= 0) {
-				d.sessions[idx] = {
-					id,
-					category: entrySelectedCategory,
-					startDate: start.toISOString(),
-					endDate: end.toISOString(),
-					minutes,
-				};
-			}
-		}, `Edit session ${id}`);
-		resetEntryForm();
+// Once a second: running timer, live clock, midnight rollover.
+function tick() {
+	const ts = timerGetState();
+	if (ts) {
+		const t = formatHMS(timerElapsedSeconds(ts));
+		const a = $('#timerDisp');
+		const b = $('#hubTimer');
+		if (a && a.textContent !== t) a.textContent = t;
+		if (b && b.textContent !== t) b.textContent = t;
 	} else {
-		const session = {
-			id: cryptoRandomId(),
-			category: entrySelectedCategory,
-			startDate: start.toISOString(),
-			endDate: end.toISOString(),
-			minutes,
-		};
-		await persist(
-			(d) => d.sessions.push(session),
-			`Add session: ${session.category}`,
-		);
-		document.getElementById('entry-start').value = '';
-		document.getElementById('entry-end').value = '';
-		document.getElementById('entry-next-day').checked = false;
-		updateEntryDuration();
+		const a = $('#timerDisp');
+		if (a && a.textContent !== '00:00:00') a.textContent = '00:00:00';
 	}
-
-	renderDashboardTab();
-	renderHistoryTab();
+	if (cur === 'clock') {
+		clockLive();
+		const nx = nextStep(clkDay(ymd(new Date())));
+		if (nx) {
+			const el = $('#st-' + nx.k + ' .sv');
+			if (el) el.textContent = shiftTime(nx);
+		}
+	}
+	const lb = $('#hubStampLbl');
+	if (lb) {
+		const nx = nextStep(clkDay(ymd(new Date())));
+		if (nx) lb.textContent = `${nx.n} · ${shiftTime(nx)}`;
+	}
+	const today = ymd(new Date());
+	if (today !== lastDay) {
+		lastDay = today;
+		renderAll();
+	}
 }
 
-function resetEntryForm() {
-	state.editingId = null;
-	document.getElementById('entry-save').textContent = 'Save entry';
-	document.getElementById('entry-cancel-edit').hidden = true;
-	document.getElementById('entry-date').valueAsDate = new Date();
-	document.getElementById('entry-start').value = '';
-	document.getElementById('entry-end').value = '';
-	document.getElementById('entry-next-day').checked = false;
-	updateEntryDuration();
-}
-
-function sameDay(a, b) {
-	return (
-		a.getFullYear() === b.getFullYear() &&
-		a.getMonth() === b.getMonth() &&
-		a.getDate() === b.getDate()
-	);
-}
-
-// ===================== Dashboard tab =====================
-
-function renderDashboardTab() {
-	renderDashboardCommon(
-		(range) => {
-			const totals = {};
-			state.data.sessions.forEach((s) => {
-				const d = getItemDate(s);
-				if (range.start && (d < range.start || d >= range.end)) return;
-				totals[s.category] = (totals[s.category] || 0) + s.minutes;
-			});
-			return totals;
-		},
-		{ formatTotal: formatMinutesAsHM, innerRadiusRatio: 0.593 },
-	);
-}
-
-// ===================== History tab =====================
-
-function renderHistoryTab() {
-	const sessions = getFilteredHistoryItems(getItemDate);
-
-	const catMap = {};
-	state.data.categories.forEach((c) => (catMap[c.key] = c));
-
-	const tbody = document.getElementById('history-tbody');
-	tbody.innerHTML = '';
-
-	if (sessions.length === 0) {
-		tbody.innerHTML = `<tr><td colspan="6" class="empty">No entries for this period.</td></tr>`;
+/* ---------- events ---------- */
+document.addEventListener('click', (e) => {
+	const t = e.target.closest('button,a');
+	if (!t) return;
+	if (t.dataset.v) {
+		e.preventDefault();
+		show(t.dataset.v);
 		return;
 	}
+	const act = t.dataset.act;
+	if (act === 'quick-water') {
+		const q = quickDrink();
+		if (q) addDrink(q.key, tapAmount(q.key));
+	} else if (act === 'hub-stamp') {
+		const nx = nextStep(clkDay(ymd(new Date())));
+		if (nx) pressStamp(nx.k);
+	}
+});
 
-	sessions.forEach((s) => {
-		const cat = catMap[s.category] || { label: s.category, color: '#666666' };
-		const start = new Date(s.startDate);
-		const end = new Date(s.endDate);
+$('#bannerBtn').addEventListener('click', (e) => {
+	const act = e.currentTarget.dataset.act;
+	if (act === 'dismiss') {
+		runtimeError = null;
+		renderBanner();
+	} else if (act === 'retry') {
+		lastRefresh = Date.now();
+		Store.flushNow().then(() => Store.refresh());
+	} else if (act === 'settings') {
+		show('settings');
+	}
+});
 
-		const tr = document.createElement('tr');
+$('#sync').addEventListener('click', () => {
+	if (Store.mode === 'local') {
+		show('settings');
+		return;
+	}
+	lastRefresh = Date.now();
+	if (Store.queue.length) Store.flushNow();
+	else Store.refresh();
+});
 
-		const dateTd = document.createElement('td');
-		dateTd.textContent = start.toLocaleDateString(undefined, {
-			weekday: 'short',
-			day: 'numeric',
-			month: 'short',
-		});
+document.addEventListener('visibilitychange', () => {
+	if (
+		document.visibilityState === 'visible' &&
+		Store.mode === 'github' &&
+		!Store.queue.length &&
+		Date.now() - lastRefresh > 15000
+	) {
+		lastRefresh = Date.now();
+		Store.refresh();
+	}
+});
 
-		const catTd = document.createElement('td');
-		const badge = document.createElement('span');
-		badge.className = 'cat-badge';
-		badge.style.setProperty('--cat-color', cat.color);
-		badge.textContent = cat.label;
-		catTd.appendChild(badge);
-
-		const startTd = document.createElement('td');
-		startTd.textContent = start.toLocaleTimeString(undefined, {
-			hour: '2-digit',
-			minute: '2-digit',
-		});
-
-		const endTd = document.createElement('td');
-		endTd.textContent = end.toLocaleTimeString(undefined, {
-			hour: '2-digit',
-			minute: '2-digit',
-		});
-
-		const durTd = document.createElement('td');
-		durTd.textContent = formatMinutesAsHM(s.minutes);
-
-		const actionsTd = document.createElement('td');
-		actionsTd.className = 'actions';
-
-		const editBtn = document.createElement('button');
-		editBtn.className = 'icon-btn';
-		editBtn.title = 'Edit';
-		editBtn.textContent = '✎';
-		editBtn.onclick = () => editSession(s.id);
-
-		const delBtn = document.createElement('button');
-		delBtn.className = 'icon-btn';
-		delBtn.title = 'Delete';
-		delBtn.textContent = '🗑';
-		delBtn.onclick = () => deleteSession(s.id);
-
-		actionsTd.append(editBtn, delBtn);
-		tr.append(dateTd, catTd, startTd, endTd, durTd, actionsTd);
-		tbody.appendChild(tr);
-	});
-}
-
-function editSession(id) {
-	const s = state.data.sessions.find((x) => x.id === id);
-	if (!s) return;
-
-	state.editingId = id;
-	entrySelectedCategory = s.category;
-
-	const start = new Date(s.startDate);
-	const end = new Date(s.endDate);
-
-	document.getElementById('entry-date').value = toDateInputValue(start);
-	document.getElementById('entry-start').value = toTimeInputValue(start);
-	document.getElementById('entry-end').value = toTimeInputValue(end);
-	document.getElementById('entry-next-day').checked = !sameDay(start, end);
-	document.getElementById('entry-save').textContent = 'Update entry';
-	document.getElementById('entry-cancel-edit').hidden = false;
-
-	switchTab('entry');
-	renderEntryTab();
-	updateEntryDuration();
-}
-
-async function deleteSession(id) {
-	if (!confirm('Delete this entry?')) return;
-	await persist((d) => {
-		d.sessions = d.sessions.filter((s) => s.id !== id);
-	}, `Delete session ${id}`);
-	renderHistoryTab();
-	renderDashboardTab();
-}
-
-// ===================== Categories tab =====================
-
-function setupCategoriesTab() {
-	setupCategoryAddButton(categoriesChanged);
-}
-
-function renderCategoriesTab() {
-	renderCategoryRows(
-		document.getElementById('categories-list'),
-		categoriesChanged,
-	);
-}
-
-// Called after any category add/edit/delete/reorder to refresh every tab
-// that displays category chips or relies on category data.
-function categoriesChanged() {
-	renderCategoriesTab();
-	renderTimerTab();
-	renderEntryTab();
-	renderDashboardTab();
-	renderHistoryTab();
-}
-
-// ===================== Settings tab =====================
-
-function setupSettingsForm() {
-	const s = ghGetSettings(APP_KEY) || {};
-	document.getElementById('settings-token').value = s.token || '';
-
-	document.getElementById('settings-save').onclick = async () => {
-		const token = document.getElementById('settings-token').value.trim();
-		if (!token) {
-			setSettingsStatus('Personal access token is required.', true);
-			return;
-		}
-		const settings = { token, ...REPO_CONFIG };
-		ghSaveSettings(APP_KEY, settings);
-		updateConfigBanner();
-		setSettingsStatus('Testing connection…');
-		try {
-			await ghTestConnection(APP_KEY);
-			setSettingsStatus('Connected - loading data…');
-			await loadFromGitHub();
-			setSettingsStatus('Connected and synced.');
-			setStatus('Synced', 'ok');
-			renderAll();
-		} catch (e) {
-			setSettingsStatus('Error: ' + e.message, true);
-		}
+/* ---------- boot ---------- */
+function init() {
+	Store.init();
+	rebuild();
+	Store.onChange = () => {
+		rebuild();
+		renderAll();
+	};
+	Store.onStatus = () => {
+		renderSyncStatus();
+		renderBanner();
 	};
 
-	document.getElementById('settings-reload').onclick = async () => {
-		setSettingsStatus('Reloading…');
-		try {
-			await loadFromGitHub();
-			setSettingsStatus('Reloaded from GitHub.');
-			setStatus('Synced', 'ok');
-			renderAll();
-		} catch (e) {
-			setSettingsStatus('Error: ' + e.message, true);
-		}
-	};
+	hydInit();
+	workInit();
+	clockInit();
+	settingsInit();
 
-	document.getElementById('config-banner-link').onclick = () =>
-		switchTab('settings');
+	let start = 'today';
+	try {
+		const h = location.hash.slice(1);
+		start =
+			VIEWS.indexOf(h) >= 0
+				? h
+				: localStorage.getItem('daybook-view') || 'today';
+	} catch (e) {}
+	show(start);
+	setInterval(tick, 1000);
+	Store.load().catch(() => {});
 }
+
+init();

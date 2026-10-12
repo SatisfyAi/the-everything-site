@@ -4,50 +4,523 @@
 		<meta charset="UTF-8" />
 		<meta
 			name="viewport"
-			content="width=device-width, initial-scale=1, maximum-scale=1"
+			content="width=device-width, initial-scale=1, viewport-fit=cover"
 		/>
-		<title>Hub</title>
+		<title>Daybook</title>
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta
 			name="apple-mobile-web-app-status-bar-style"
 			content="black-translucent"
 		/>
-		<meta name="apple-mobile-web-app-title" content="Hub" />
+		<meta name="apple-mobile-web-app-title" content="Daybook" />
+		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
 		<link rel="icon" type="image/png" href="hub.png?v=2" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;800&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&family=Poppins:wght@800&display=swap"
 			rel="stylesheet"
 		/>
+		<script>
+			// Apply the saved theme before first paint (dark unless changed in Settings).
+			try {
+				var t = localStorage.getItem('daybook-theme') || 'dark';
+				if (t !== 'auto')
+					document.documentElement.setAttribute('data-theme', t);
+			} catch (e) {
+				document.documentElement.setAttribute('data-theme', 'dark');
+			}
+		</script>
 		<link rel="stylesheet" href="style.css" />
-		<link rel="stylesheet" href="hub.css" />
 	</head>
-	<body>
-		<header class="app-header">
-			<h1>Hub</h1>
+	<body data-v="today">
+		<header class="top">
+			<button class="brand" data-v="today" type="button">Daybook</button>
+			<nav id="nav" aria-label="Sections">
+				<a href="#today" data-v="today" class="n-today"
+					><svg viewBox="0 0 24 24">
+						<rect x="4" y="5" width="16" height="15" rx="3" />
+						<path d="M4 10h16M9 3v4M15 3v4" /></svg
+					><span>Today</span></a
+				>
+				<a href="#water" data-v="water" class="n-water"
+					><svg viewBox="0 0 24 24">
+						<path
+							d="M12 3c3.5 4.2 6 7 6 10a6 6 0 0 1-12 0c0-3 2.5-5.8 6-10z"
+						/></svg
+					><span>Hydration</span></a
+				>
+				<a href="#discord" data-v="discord" class="n-discord"
+					><svg viewBox="0 0 24 24">
+						<circle cx="12" cy="14" r="7" />
+						<path d="M12 14v-4M9 3h6M18.5 6.5L20 5" /></svg
+					><span>Discord</span></a
+				>
+				<a href="#clock" data-v="clock" class="n-clock"
+					><svg viewBox="0 0 24 24">
+						<rect x="3" y="8" width="18" height="12" rx="2" />
+						<path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18" /></svg
+					><span>Job clock</span></a
+				>
+			</nav>
+			<div class="status">
+				<button id="sync" type="button" class="syncbtn">Loading…</button>
+				<a
+					class="gear"
+					id="gear"
+					href="#settings"
+					data-v="settings"
+					aria-label="Settings"
+					><svg viewBox="0 0 24 24">
+						<path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+						<circle cx="15" cy="7" r="2" />
+						<circle cx="9" cy="17" r="2" /></svg
+				></a>
+			</div>
 		</header>
 
-		<main class="hub-grid">
-			<a class="hub-card" href="time-tracker.html">
-				<img class="hub-card-icon" src="stopwatch-solid-full.svg" alt="" />
-				<div class="hub-card-title">Time Tracker</div>
-				<p class="hub-card-desc">
-					Track time spent on tasks with a live timer or backlogged entries, and
-					view breakdowns by day, week, month, year, or all time.
-				</p>
-			</a>
+		<div id="banner" class="banner" hidden>
+			<span class="msg" id="bannerMsg"></span>
+			<button id="bannerBtn" type="button"></button>
+		</div>
 
-			<a class="hub-card" href="hydration-tracker.html">
-				<img class="hub-card-icon" src="glass-water-solid-full.svg" alt="" />
-				<div class="hub-card-title">Hydration Tracker</div>
-				<p class="hub-card-desc">
-					Log water, juice, milk, tea, soda, and coffee intake with quick preset
-					amounts, and view your totals by day, week, month, year, or all time.
-				</p>
-			</a>
+		<main>
+			<!-- ===================== TODAY ===================== -->
+			<section id="v-today" class="view">
+				<div>
+					<div class="eyebrow">Today</div>
+					<h1 class="h-display" id="todayDate">&nbsp;</h1>
+				</div>
+				<div class="panels">
+					<article class="panel water" id="hubWater"></article>
+					<article class="panel discord" id="hubWork"></article>
+					<article class="panel clock" id="hubClock"></article>
+				</div>
+			</section>
+
+			<!-- ===================== HYDRATION ===================== -->
+			<section id="v-water" class="view" hidden>
+				<div>
+					<div class="eyebrow">Today</div>
+					<h1 class="h-display">Hydration</h1>
+				</div>
+				<div class="split">
+					<div class="card glasscard">
+						<svg
+							id="glass"
+							viewBox="0 0 120 200"
+							role="img"
+							aria-label="Glass showing today's intake against the goal"
+						>
+							<defs>
+								<clipPath id="gclip">
+									<path d="M18 8H102L93 186Q92 193 85 193H35Q28 193 27 186Z" />
+								</clipPath>
+							</defs>
+							<g clip-path="url(#gclip)">
+								<rect x="0" y="0" width="120" height="200" class="glassbg" />
+								<g id="glassFill"></g>
+							</g>
+							<path
+								class="glassline"
+								d="M18 8H102L93 186Q92 193 85 193H35Q28 193 27 186Z"
+							/>
+						</svg>
+						<div>
+							<div class="big" id="gTotal">0ml</div>
+							<div class="muted" id="gOf"></div>
+						</div>
+					</div>
+					<div class="card">
+						<div class="lab">Tap a drink to log it</div>
+						<div class="drinks" id="drinkChips"></div>
+						<div class="note" id="hydNote" role="status"></div>
+						<details class="more" id="hydMore">
+							<summary id="hydMoreTitle">Different amount or time</summary>
+							<div class="form">
+								<div class="field">
+									<label for="mdDrink">Drink</label
+									><select id="mdDrink"></select>
+								</div>
+								<div class="field">
+									<label for="mdMl">Amount (ml)</label
+									><input
+										id="mdMl"
+										type="number"
+										inputmode="numeric"
+										min="1"
+										step="1"
+										placeholder="e.g.200"
+									/>
+								</div>
+								<div class="field">
+									<label for="mdDate">Date</label
+									><input id="mdDate" type="date" />
+								</div>
+								<div class="field">
+									<label for="mdTime">Time</label
+									><input id="mdTime" type="time" />
+								</div>
+							</div>
+							<div class="lab" style="margin: 14px 0 8px">Quick amounts</div>
+							<div class="chips" id="mdPresets"></div>
+							<div class="addrow">
+								<button class="btn" id="mdAdd" type="button">Add entry</button>
+								<button class="btn ghost" id="mdCancel" type="button" hidden>
+									Cancel edit
+								</button>
+							</div>
+						</details>
+					</div>
+				</div>
+				<div class="card" id="chart-water"></div>
+				<div class="card">
+					<div class="chart-head">
+						<div class="lab" style="margin: 0">History</div>
+						<select
+							id="hydMonth"
+							class="monthsel"
+							aria-label="Show entries from"
+						></select>
+					</div>
+					<div id="hydList"></div>
+					<button
+						class="btn ghost sm morebtn"
+						id="hydMoreBtn"
+						type="button"
+						hidden
+					>
+						Show more
+					</button>
+				</div>
+			</section>
+
+			<!-- ===================== DISCORD TIME ===================== -->
+			<section id="v-discord" class="view" hidden>
+				<div>
+					<div class="eyebrow">Staff team manager</div>
+					<h1 class="h-display">Discord time</h1>
+				</div>
+				<div class="card timer">
+					<div>
+						<div class="lab">What are you working on?</div>
+						<div class="chips" id="catChips"></div>
+					</div>
+					<div>
+						<div class="big" id="timerDisp">00:00:00</div>
+						<div class="muted" id="timerState">Ready</div>
+					</div>
+					<input
+						id="timerNote"
+						type="text"
+						placeholder="Note (optional)"
+						maxlength="140"
+						aria-label="Note"
+					/>
+					<div class="trow">
+						<button class="btn" id="tStart" type="button">Start</button>
+						<button class="btn ghost" id="tPause" type="button" hidden>
+							Pause
+						</button>
+						<button class="btn" id="tResume" type="button" hidden>
+							Resume
+						</button>
+						<button class="btn" id="tStop" type="button" hidden>
+							Stop &amp; save
+						</button>
+						<button class="btn ghost danger" id="tCancel" type="button" hidden>
+							Discard
+						</button>
+					</div>
+					<div class="note" id="timerMsg" role="status"></div>
+					<details class="more" id="wrkMore" style="margin-top: 0">
+						<summary id="wrkMoreTitle">
+							Add a session you forgot to track
+						</summary>
+						<div class="form">
+							<div class="field">
+								<label for="mwCat">Category</label
+								><select id="mwCat"></select>
+							</div>
+							<div class="field">
+								<label for="mwDate">Date</label
+								><input id="mwDate" type="date" />
+							</div>
+							<div class="field">
+								<label for="mwStart">Start</label
+								><input id="mwStart" type="time" />
+							</div>
+							<div class="field">
+								<label for="mwEnd">End</label><input id="mwEnd" type="time" />
+							</div>
+						</div>
+						<label class="check"
+							><input id="mwNext" type="checkbox" /> End time is on the next
+							day</label
+						>
+						<div class="field" style="margin-top: 12px">
+							<label for="mwNote">Note</label
+							><input id="mwNote" type="text" maxlength="140" />
+						</div>
+						<div class="addrow">
+							<button class="btn" id="mwAdd" type="button">Add session</button>
+							<button class="btn ghost" id="mwCancel" type="button" hidden>
+								Cancel edit
+							</button>
+							<span class="muted" id="mwDur" style="align-self: center"></span>
+						</div>
+						<div class="note" id="mwMsg" role="status"></div>
+					</details>
+				</div>
+				<div class="card" id="chart-work"></div>
+				<div class="card">
+					<div class="chart-head">
+						<div class="lab" style="margin: 0">History</div>
+						<select
+							id="wrkMonth"
+							class="monthsel"
+							aria-label="Show sessions from"
+						></select>
+					</div>
+					<div id="wrkList"></div>
+					<button
+						class="btn ghost sm morebtn"
+						id="wrkMoreBtn"
+						type="button"
+						hidden
+					>
+						Show more
+					</button>
+				</div>
+			</section>
+
+			<!-- ===================== JOB CLOCK ===================== -->
+			<section id="v-clock" class="view" hidden>
+				<div>
+					<div class="eyebrow" id="clkDate">Today</div>
+					<h1 class="h-display">Job clock</h1>
+				</div>
+				<div class="card">
+					<div class="stamps" id="stamps">
+						<button class="stamp" id="st-s" data-stamp="s" type="button">
+							<span class="sl">Start</span><span class="sv">–:–</span
+							><span class="sh"></span>
+						</button>
+						<button class="stamp" id="st-ls" data-stamp="ls" type="button">
+							<span class="sl">Lunch start</span><span class="sv">–:–</span
+							><span class="sh"></span>
+						</button>
+						<button class="stamp" id="st-le" data-stamp="le" type="button">
+							<span class="sl">Lunch end</span><span class="sv">–:–</span
+							><span class="sh"></span>
+						</button>
+						<button class="stamp" id="st-e" data-stamp="e" type="button">
+							<span class="sl">End</span><span class="sv">–:–</span
+							><span class="sh"></span>
+						</button>
+					</div>
+					<div class="sum">
+						<div class="txt" id="clkSum"></div>
+						<button class="btn ghost sm" id="clkUndo" type="button">
+							Undo last
+						</button>
+					</div>
+				</div>
+				<div class="card" id="chart-clock"></div>
+				<div class="card">
+					<div class="chart-head">
+						<div class="lab" style="margin: 0">
+							Week log · times are editable
+						</div>
+						<div class="cnav">
+							<button
+								class="icon"
+								data-tw="-1"
+								type="button"
+								aria-label="Previous week"
+							>
+								‹
+							</button>
+							<span class="ctitle" id="twTitle"></span>
+							<button
+								class="icon"
+								data-tw="1"
+								type="button"
+								aria-label="Next week"
+							>
+								›
+							</button>
+						</div>
+					</div>
+					<div class="tablewrap" style="margin-top: 10px">
+						<table id="clkTable"></table>
+					</div>
+				</div>
+			</section>
+
+			<!-- ===================== SETTINGS ===================== -->
+			<section id="v-settings" class="view" hidden>
+				<div>
+					<div class="eyebrow">Daybook</div>
+					<h1 class="h-display">Settings</h1>
+				</div>
+
+				<div class="card">
+					<h2 class="h2">GitHub sync</h2>
+					<p class="muted small" id="ghIntro"></p>
+					<div class="field" style="margin-top: 12px">
+						<label for="ghToken">Personal access token</label>
+						<input
+							id="ghToken"
+							type="password"
+							autocomplete="off"
+							autocapitalize="off"
+							spellcheck="false"
+							placeholder="github_pat_..."
+						/>
+					</div>
+					<label class="check" id="ghMigrateRow" hidden
+						><input id="ghMigrate" type="checkbox" checked /> Copy the data
+						saved on this device into the repo</label
+					>
+					<div class="addrow">
+						<button class="btn sm" id="ghSave" type="button">
+							Save &amp; connect
+						</button>
+						<button class="btn ghost sm" id="ghReload" type="button">
+							Reload from GitHub
+						</button>
+						<button
+							class="btn ghost sm danger"
+							id="ghDisconnect"
+							type="button"
+							hidden
+						>
+							Disconnect
+						</button>
+					</div>
+					<div class="note" id="ghMsg" role="status"></div>
+					<p class="muted small">
+						The token is stored only in this browser. It is sent to nobody
+						except
+						<code>api.github.com</code>. On another device you enter it once
+						there. The repository, branch and file names are set in
+						<code>js/github.js</code> (<code>REPO_CONFIG</code> at the top).
+					</p>
+				</div>
+
+				<div class="card">
+					<h2 class="h2">Appearance</h2>
+					<div
+						class="tabs"
+						id="themeSeg"
+						role="group"
+						aria-label="Theme"
+						style="margin-top: 12px; width: fit-content"
+					>
+						<button class="tab" type="button" data-theme="dark">Dark</button>
+						<button class="tab" type="button" data-theme="light">Light</button>
+						<button class="tab" type="button" data-theme="auto">
+							Match device
+						</button>
+					</div>
+				</div>
+
+				<div class="card">
+					<h2 class="h2">Hydration</h2>
+					<div class="sgrid" style="margin-top: 12px">
+						<div class="field">
+							<label for="setGoal">Daily goal (ml)</label
+							><input id="setGoal" type="number" step="50" min="100" />
+						</div>
+					</div>
+					<div class="lab" style="margin: 18px 0 8px">
+						Drinks · colour, name and one-tap amount
+					</div>
+					<div id="setDrinks"></div>
+					<div class="catrow add">
+						<input
+							type="color"
+							id="newDrinkColor"
+							value="#3b82f6"
+							aria-label="Colour"
+						/>
+						<input
+							type="text"
+							id="newDrinkLabel"
+							placeholder="New drink"
+							maxlength="30"
+							aria-label="New drink name"
+						/>
+						<button class="btn sm" id="addDrink" type="button">Add</button>
+					</div>
+					<p class="muted small">
+						A drink that already has entries can't be deleted, but you can
+						rename or recolour it at any time - changes apply to past entries
+						too.
+					</p>
+				</div>
+
+				<div class="card">
+					<h2 class="h2">Discord categories</h2>
+					<div style="margin-top: 12px" id="setCats"></div>
+					<div class="catrow add">
+						<input
+							type="color"
+							id="newCatColor"
+							value="#3b82f6"
+							aria-label="Colour"
+						/>
+						<input
+							type="text"
+							id="newCatLabel"
+							placeholder="New category name"
+							maxlength="40"
+							aria-label="New category name"
+						/>
+						<button class="btn sm" id="addCat" type="button">Add</button>
+					</div>
+					<p class="muted small">
+						Categories with logged time can't be deleted, but you can rename or
+						recolour them at any time.
+					</p>
+				</div>
+
+				<div class="card">
+					<h2 class="h2">Job clock</h2>
+					<div class="sgrid" style="margin-top: 12px">
+						<div class="field">
+							<label for="setStart">Start shift (min)</label
+							><input id="setStart" type="number" step="1" />
+						</div>
+						<div class="field">
+							<label for="setEnd">End shift (min)</label
+							><input id="setEnd" type="number" step="1" />
+						</div>
+						<div class="field">
+							<label for="setTarget">Daily target (hours)</label
+							><input id="setTarget" type="number" step="0.25" min="0" />
+						</div>
+					</div>
+					<p class="muted small">
+						Start is recorded as now plus the start shift, End as now plus the
+						end shift (a negative number goes back in time).
+					</p>
+				</div>
+			</section>
 		</main>
+
+		<script src="js/util.js"></script>
+		<script src="js/data.js"></script>
+		<script src="js/github.js"></script>
+		<script src="js/timer.js"></script>
+		<script src="js/chart.js"></script>
+		<script src="js/hydration.js"></script>
+		<script src="js/work.js"></script>
+		<script src="js/clock.js"></script>
+		<script src="js/settings.js"></script>
+		<script src="js/app.js"></script>
 	</body>
 </html>

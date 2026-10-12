@@ -1,9 +1,9 @@
 {
-	"name": "The Everything Site",
+	"name": "Daybook",
 	"start_url": "/the-everything-site/index.html",
 	"scope": "/the-everything-site/",
 	"display": "standalone",
-	"background_color": "#000000",
-	"theme_color": "#000000",
+	"background_color": "#0b0e13",
+	"theme_color": "#0b0e13",
 	"icons": [{ "src": "hub.png", "sizes": "512x512", "type": "image/png" }]
 }
