@@ -1,5 +1,8 @@
-// Manages the "currently running" timer. Persisted to localStorage so it
+// ===================== Running timer =====================
+// The "currently running" Discord-time timer. Persisted to localStorage so it
 // survives page reloads (but is local to this browser/device only).
+// Same storage key and shape as the old Time Tracker page, so a timer that
+// is running while you update keeps going.
 
 const TIMER_KEY = 'tt_active_timer';
 
@@ -12,11 +15,8 @@ function timerGetState() {
 }
 
 function timerSetState(state) {
-	if (state) {
-		localStorage.setItem(TIMER_KEY, JSON.stringify(state));
-	} else {
-		localStorage.removeItem(TIMER_KEY);
-	}
+	if (state) localStorage.setItem(TIMER_KEY, JSON.stringify(state));
+	else localStorage.removeItem(TIMER_KEY);
 }
 
 // Starts a brand new timer for the given category key.
@@ -37,9 +37,8 @@ function timerStart(categoryKey) {
 function timerPause() {
 	const state = timerGetState();
 	if (!state || !state.running) return state;
-	const now = Date.now();
 	const segStart = new Date(state.segmentStart).getTime();
-	state.accumulatedSeconds += Math.floor((now - segStart) / 1000);
+	state.accumulatedSeconds += Math.floor((Date.now() - segStart) / 1000);
 	state.segmentStart = null;
 	state.running = false;
 	timerSetState(state);
@@ -56,7 +55,7 @@ function timerResume() {
 	return state;
 }
 
-// Returns total elapsed seconds right now (including the current running segment).
+// Total elapsed seconds right now (including the running segment).
 function timerElapsedSeconds(state) {
 	if (!state) return 0;
 	let total = state.accumulatedSeconds || 0;
@@ -68,45 +67,30 @@ function timerElapsedSeconds(state) {
 	return total;
 }
 
-// Stops the timer. Returns:
-//  - a session object if the tracked time was at least 1 minute
-//  - { discarded: true, elapsedSeconds } if it was under 1 minute (too short to log)
+// Stops the timer and clears it. Returns:
+//  - a session object if at least 1 minute was tracked
+//  - { discarded: true, elapsedSeconds } if it was under a minute
 //  - null if there was no active timer
-// Either way, the active timer state is cleared.
-function timerStop() {
+function timerStop(note) {
 	const state = timerGetState();
 	if (!state) return null;
 	const elapsed = timerElapsedSeconds(state);
 	timerSetState(null);
 
-	if (elapsed < 60) {
-		return { discarded: true, elapsedSeconds: elapsed };
-	}
+	if (elapsed < 60) return { discarded: true, elapsedSeconds: elapsed };
 
-	return {
+	const session = {
 		id: cryptoRandomId(),
 		category: state.category,
 		startDate: state.originalStart,
 		endDate: new Date().toISOString(),
 		minutes: Math.round(elapsed / 60),
 	};
+	if (note) session.note = note;
+	return session;
 }
 
 // Discards the active timer without creating a session.
 function timerCancel() {
 	timerSetState(null);
-}
-
-function cryptoRandomId() {
-	if (window.crypto && window.crypto.randomUUID)
-		return window.crypto.randomUUID();
-	return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
-}
-
-function formatHMS(totalSeconds) {
-	const h = Math.floor(totalSeconds / 3600);
-	const m = Math.floor((totalSeconds % 3600) / 60);
-	const s = totalSeconds % 60;
-	const pad = (n) => String(n).padStart(2, '0');
-	return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
