@@ -35,14 +35,14 @@ const DEFAULT_DRINKS = [
 
 // Amount logged by one tap on a drink (editable in Settings).
 const DEFAULT_TAP = {
-	Water: 250,
+	Water: 200,
 	Tea: 200,
 	Juice: 200,
 	Milk: 200,
 	Coffee: 150,
 	Soda: 330,
 };
-const DEFAULT_TAP_FALLBACK = 250;
+const DEFAULT_TAP_FALLBACK = 200;
 const HYDRATION_PRESETS = [200, 400, 500, 1000, 1500, 2000];
 
 const DEFAULT_CLOCK_SETTINGS = { startShift: 5, endShift: -5, dayTarget: 480 };
