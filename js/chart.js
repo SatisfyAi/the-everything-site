@@ -492,7 +492,10 @@ function chartDraw(id) {
 	const totals = data.map((d) =>
 		series.reduce((a, s) => a + (d.vals[s.k] || 0), 0),
 	);
-	const sum = totals.reduce((a, b) => a + b, 0);
+	// `shown` (optional) is what a bar means for the readout, when that is not
+	// the full stack height (e.g. the red "under target" part is not time worked).
+	const shown = cfg.shown ? data.map(cfg.shown) : totals;
+	const sum = shown.reduce((a, b) => a + b, 0);
 
 	// Days covered so far (for daily averages).
 	const todayEnd = addD(sod(new Date()), 1).getTime();
@@ -624,7 +627,7 @@ function chartDraw(id) {
 
 	const summary = `${bk.title} · ${cfg.fmt(sum)}`;
 	$('.readout', host).textContent = summary;
-	c.info = { list, data, totals, series, fmt: cfg.fmt, summary };
+	c.info = { list, data, totals: shown, series, fmt: cfg.fmt, summary };
 }
 
 function chartReadout(host, i) {

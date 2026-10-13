@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css" />
+		<link rel="stylesheet" href="style.css?v=2" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -152,7 +152,7 @@
 										inputmode="numeric"
 										min="1"
 										step="1"
-										placeholder="e.g.200"
+										placeholder="e.g. 250"
 									/>
 								</div>
 								<div class="field">
@@ -329,6 +329,54 @@
 					</div>
 				</div>
 				<div class="card" id="chart-clock"></div>
+				<div class="card" id="offCard">
+					<div class="lab">Time off · vacation and doctor</div>
+					<div class="form">
+						<div class="field">
+							<label for="offType">Type</label>
+							<select id="offType">
+								<option value="vacation">Vacation</option>
+								<option value="doctor">Doctor appointment</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="offFrom">Date</label
+							><input id="offFrom" type="date" />
+						</div>
+						<div class="field" id="offToF">
+							<label for="offTo">Until (optional)</label
+							><input id="offTo" type="date" />
+						</div>
+						<div class="field" id="offDurF">
+							<label for="offDur">Time away (hours)</label
+							><input
+								id="offDur"
+								type="number"
+								inputmode="decimal"
+								step="0.25"
+								min="0.25"
+								placeholder="e.g. 1.5"
+							/>
+						</div>
+					</div>
+					<label class="check" id="offWkF"
+						><input id="offWk" type="checkbox" checked /> Skip Saturdays and
+						Sundays</label
+					>
+					<div class="addrow">
+						<button class="btn" id="offAdd" type="button">Add</button>
+					</div>
+					<div class="note" id="offMsg" role="status"></div>
+					<p class="muted small" style="margin: 12px 0 0">
+						A whole vacation day means no hours are expected. For half a day (or
+						a doctor appointment) enter the hours you're away: that day's target
+						is lowered by that much. Days with no data at all (weekends, public
+						holidays, gaps) are ignored and never count as missing hours.
+					</p>
+					<div class="lab" style="margin: 18px 0 8px">Upcoming and recent</div>
+					<div id="offList"></div>
+				</div>
+
 				<div class="card">
 					<div class="chart-head">
 						<div class="lab" style="margin: 0">
@@ -512,15 +560,15 @@
 			</section>
 		</main>
 
-		<script src="js/util.js"></script>
-		<script src="js/data.js"></script>
-		<script src="js/github.js"></script>
-		<script src="js/timer.js"></script>
-		<script src="js/chart.js"></script>
-		<script src="js/hydration.js"></script>
-		<script src="js/work.js"></script>
-		<script src="js/clock.js"></script>
-		<script src="js/settings.js"></script>
-		<script src="js/app.js"></script>
+		<script src="js/util.js?v=2"></script>
+		<script src="js/data.js?v=2"></script>
+		<script src="js/github.js?v=2"></script>
+		<script src="js/timer.js?v=2"></script>
+		<script src="js/chart.js?v=2"></script>
+		<script src="js/hydration.js?v=2"></script>
+		<script src="js/work.js?v=2"></script>
+		<script src="js/clock.js?v=2"></script>
+		<script src="js/settings.js?v=2"></script>
+		<script src="js/app.js?v=2"></script>
 	</body>
 </html>

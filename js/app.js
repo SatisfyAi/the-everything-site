@@ -2,6 +2,31 @@
 // State, navigation, the Today overview, the status banner and boot.
 // The sections live in hydration.js, work.js, clock.js and settings.js.
 
+// If an older copy of a file is still deployed (or cached), say so plainly
+// instead of failing with a vague error.
+(function () {
+	const need = {
+		'js/github.js': typeof Store,
+		'js/hydration.js': typeof hydInit,
+		'js/work.js': typeof workInit,
+		'js/clock.js': typeof clockInit,
+		'js/settings.js': typeof settingsInit,
+		'js/chart.js': typeof chartInit,
+	};
+	const bad = Object.keys(need).filter((k) => need[k] === 'undefined');
+	if (bad.length) {
+		const m = `These files are missing or are an old version: ${bad.join(', ')}. Upload the new copies, then hard-refresh (Ctrl+F5).`;
+		document.addEventListener('DOMContentLoaded', () => {
+			const b = document.getElementById('banner');
+			document.getElementById('bannerMsg').textContent = m;
+			document.getElementById('bannerBtn').hidden = true;
+			b.className = 'banner err';
+			b.hidden = false;
+		});
+		throw new Error(m);
+	}
+})();
+
 const VIEWS = ['today', 'water', 'discord', 'clock', 'settings'];
 
 // Current data for each file (read-only; every change goes through Store.commit).
@@ -157,9 +182,13 @@ function renderToday() {
 		(st) => `<i class="dot${day[st.k] ? ' on' : ''}" title="${st.n}"></i>`,
 	).join('');
 	const w = liveWorked(day);
+	const off = dayOff(day);
 	$('#hubClock').innerHTML =
 		`<div class="p-head"><span class="p-title">Job clock</span><button class="link" type="button" data-v="clock">Open</button></div>` +
-		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : 'nothing'} <small>${day.e ? 'worked' : 'so far'}</small></div><div class="dots">${dots}</div>` +
+		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : '–'} <small>${day.e ? 'worked' : 'so far'}</small></div><div class="dots">${dots}</div>` +
+		(off
+			? `<div class="muted">${esc(offLabel(off))}${isFullOff(off) ? ' · day off' : ''}</div>`
+			: '') +
 		(nx
 			? `<button class="btn sm" type="button" data-act="hub-stamp"><span id="hubStampLbl">${nx.n} · ${shiftTime(nx)}</span></button>`
 			: '<div class="muted">Day complete</div>');
