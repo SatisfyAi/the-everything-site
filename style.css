@@ -446,8 +446,8 @@ main {
 	color: var(--danger);
 	border-color: var(--danger);
 }
-.btn.danger.armed,
-.x.del.armed {
+.btn.danger.arm,
+.x.del.arm {
 	background: var(--danger);
 	color: #fff;
 	border-color: var(--danger);
@@ -902,10 +902,14 @@ input[type='checkbox'] {
 .x.del:hover {
 	color: var(--danger);
 }
-.x.del.armed {
+.x.del.arm {
 	width: auto;
+	min-width: 34px;
 	padding: 0 10px;
 	font-size: 13px;
+	white-space: nowrap;
+	background: var(--danger);
+	color: #fff;
 }
 .empty {
 	padding: 22px 0;
@@ -1203,4 +1207,65 @@ input.cell {
 		transition: none !important;
 		animation: none !important;
 	}
+}
+
+/* ---------- time off ---------- */
+.badge {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 8px;
+	border-radius: 999px;
+	font:
+		500 11px/1.6 'DM Sans',
+		sans-serif;
+	letter-spacing: 0;
+	background: var(--card2);
+	border: 1px solid var(--line);
+	color: var(--text);
+	white-space: nowrap;
+	vertical-align: middle;
+}
+.badge.off-vacation {
+	border-color: var(--discord);
+	color: var(--discord);
+}
+.badge.off-holiday {
+	border-color: var(--water);
+	color: var(--water);
+}
+.badge.off-doctor {
+	border-color: var(--neg);
+	color: var(--neg);
+}
+.offrow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 0;
+	border-bottom: 1px solid var(--line);
+}
+.offrow:last-child {
+	border-bottom: 0;
+}
+.offrow .when {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.offrow .what {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.offrow .badge {
+	margin-left: 0;
+}
+.offrow .what {
+	flex: none;
+}
+.offrow .what span {
+	overflow: visible;
+	white-space: nowrap;
+}
+.offrow .when {
+	flex: 1 1 120px;
 }
