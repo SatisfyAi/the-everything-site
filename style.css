@@ -320,7 +320,7 @@ main {
 }
 .split {
 	display: grid;
-	grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+	grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
 	gap: 16px;
 }
 .lab {
@@ -1277,4 +1277,18 @@ input.cell {
 }
 .offrow .when {
 	flex: 1 1 120px;
+}
+
+/* the amount next to the glass must stay inside its card */
+.glasscard > div:last-child {
+	min-width: 0;
+}
+.glasscard .big {
+	font-size: clamp(30px, 3.4vw, 44px);
+	white-space: nowrap;
+}
+@media (max-width: 860px) {
+	.glasscard .big {
+		font-size: clamp(34px, 9vw, 48px);
+	}
 }
