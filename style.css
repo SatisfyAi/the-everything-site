@@ -14,6 +14,9 @@
 	--water: #4fc3f7;
 	--discord: #7b6cff;
 	--clock: #f0c808;
+	--hours: #8b94a5;
+	--doctor: #4fc3f7;
+	--vacation: #8b7dff;
 	--pos: #6fd08c;
 	--neg: #ff7a7a;
 	--danger: #ff6b6b;
@@ -36,6 +39,9 @@
 	--water: #0288d1;
 	--discord: #5b4de0;
 	--clock: #c79a00;
+	--hours: #9aa1ad;
+	--doctor: #0288d1;
+	--vacation: #5b4de0;
 	--pos: #1f8f4a;
 	--neg: #d23a3a;
 	--danger: #d23a3a;
@@ -57,6 +63,9 @@
 		--water: #0288d1;
 		--discord: #5b4de0;
 		--clock: #c79a00;
+		--hours: #9aa1ad;
+		--doctor: #0288d1;
+		--vacation: #5b4de0;
 		--pos: #1f8f4a;
 		--neg: #d23a3a;
 		--danger: #d23a3a;
@@ -311,7 +320,7 @@ main {
 }
 .split {
 	display: grid;
-	grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+	grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
 	gap: 16px;
 }
 .lab {
@@ -1226,16 +1235,16 @@ input.cell {
 	vertical-align: middle;
 }
 .badge.off-vacation {
-	border-color: var(--discord);
-	color: var(--discord);
+	border-color: var(--vacation);
+	color: var(--vacation);
 }
 .badge.off-holiday {
 	border-color: var(--water);
 	color: var(--water);
 }
 .badge.off-doctor {
-	border-color: var(--neg);
-	color: var(--neg);
+	border-color: var(--doctor);
+	color: var(--doctor);
 }
 .offrow {
 	display: flex;
@@ -1268,4 +1277,18 @@ input.cell {
 }
 .offrow .when {
 	flex: 1 1 120px;
+}
+
+/* the amount next to the glass must stay inside its card */
+.glasscard > div:last-child {
+	min-width: 0;
+}
+.glasscard .big {
+	font-size: clamp(30px, 3.4vw, 44px);
+	white-space: nowrap;
+}
+@media (max-width: 860px) {
+	.glasscard .big {
+		font-size: clamp(34px, 9vw, 48px);
+	}
 }
