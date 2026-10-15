@@ -14,6 +14,9 @@
 	--water: #4fc3f7;
 	--discord: #7b6cff;
 	--clock: #f0c808;
+	--hours: #8b94a5;
+	--doctor: #4fc3f7;
+	--vacation: #8b7dff;
 	--pos: #6fd08c;
 	--neg: #ff7a7a;
 	--danger: #ff6b6b;
@@ -36,6 +39,9 @@
 	--water: #0288d1;
 	--discord: #5b4de0;
 	--clock: #c79a00;
+	--hours: #9aa1ad;
+	--doctor: #0288d1;
+	--vacation: #5b4de0;
 	--pos: #1f8f4a;
 	--neg: #d23a3a;
 	--danger: #d23a3a;
@@ -57,6 +63,9 @@
 		--water: #0288d1;
 		--discord: #5b4de0;
 		--clock: #c79a00;
+		--hours: #9aa1ad;
+		--doctor: #0288d1;
+		--vacation: #5b4de0;
 		--pos: #1f8f4a;
 		--neg: #d23a3a;
 		--danger: #d23a3a;
@@ -1226,16 +1235,16 @@ input.cell {
 	vertical-align: middle;
 }
 .badge.off-vacation {
-	border-color: var(--discord);
-	color: var(--discord);
+	border-color: var(--vacation);
+	color: var(--vacation);
 }
 .badge.off-holiday {
 	border-color: var(--water);
 	color: var(--water);
 }
 .badge.off-doctor {
-	border-color: var(--neg);
-	color: var(--neg);
+	border-color: var(--doctor);
+	color: var(--doctor);
 }
 .offrow {
 	display: flex;

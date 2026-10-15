@@ -327,51 +327,87 @@ function renderOffList() {
 const cssVar = (name) =>
 	getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
+// Minutes of a day that are time off (a whole vacation day counts as the daily target).
+function dayOffMinutes(r) {
+	const o = dayOff(r);
+	if (!o) return 0;
+	return isFullOff(o)
+		? Number(clkSettings().dayTarget) || 0
+		: Number(o.min) || 0;
+}
+
 // Totals for a list of buckets. Days with no data are ignored.
 function clkAgg(list) {
-	let sum = 0;
-	let days = 0;
-	let bal = 0;
-	let off = 0;
+	const a = { sum: 0, days: 0, bal: 0, doctor: 0, vacation: 0 };
 	list.forEach((b) => {
 		for (let d = new Date(b.s); d.getTime() < b.e; d = addD(d, 1)) {
 			const r = clkDay(ymd(d));
 			const w = dayWorked(r);
 			if (w) {
-				sum += w;
-				days++;
-				bal += w - dayTarget(r);
+				a.sum += w;
+				a.days++;
+				a.bal += w - dayTarget(r);
 			}
-			if (isFullOff(dayOff(r))) off++;
+			const o = dayOff(r);
+			if (o) a[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
 		}
 	});
-	return { sum, days, bal, off };
+	return a;
 }
 
-// Finished days are shown against the target: the gap up to the target in
-// red, anything above it in green (same colours as "Vs target" in the log).
+const clkWeekView = () =>
+	!!(charts.clock && charts.clock.st && charts.clock.st.range === 'week');
+
+// Bars are time worked (grey) with doctor and vacation hours stacked on top.
+// Only the week view compares each finished day with its target: the gap up
+// to the target in red, anything above it in green (same colours as "Vs
+// target" in the week log). Longer ranges just show the hours, because
+// plus and minus days cancel out there.
 const clockChartCfg = {
 	range: 'week',
 	ranges: ['week', 'month', 'year', 'all'],
-	series: () => [
-		{ k: 'worked', n: 'Worked', color: cssVar('--clock') || '#f0c808' },
-		{ k: 'missing', n: 'Under target', color: cssVar('--neg') || '#ff7a7a' },
-		{ k: 'extra', n: 'Over target', color: cssVar('--pos') || '#6fd08c' },
-	],
-	data: (bs) =>
-		bs.map((b) => {
-			const v = { worked: 0, missing: 0, extra: 0 };
+	series: () => {
+		const base = [
+			{ k: 'worked', n: 'Worked', color: cssVar('--hours') || '#8b94a5' },
+			{ k: 'doctor', n: 'Doctor', color: cssVar('--doctor') || '#4fc3f7' },
+			{
+				k: 'vacation',
+				n: 'Vacation',
+				color: cssVar('--vacation') || '#7b6cff',
+			},
+		];
+		return clkWeekView()
+			? base.concat([
+					{
+						k: 'missing',
+						n: 'Under target',
+						color: cssVar('--neg') || '#ff7a7a',
+					},
+					{ k: 'extra', n: 'Over target', color: cssVar('--pos') || '#6fd08c' },
+				])
+			: base;
+	},
+	data: (bs) => {
+		const week = clkWeekView();
+		return bs.map((b) => {
+			const v = { worked: 0, doctor: 0, vacation: 0, missing: 0, extra: 0 };
 			for (let d = new Date(b.s); d.getTime() < b.e; d = addD(d, 1)) {
 				const r = clkDay(ymd(d));
+				const o = dayOff(r);
+				if (o)
+					v[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
 				const w = dayWorked(r);
 				if (!w) continue;
-				const t = dayTarget(r);
-				v.worked += Math.min(w, t);
-				v.missing += Math.max(0, t - w);
-				v.extra += Math.max(0, w - t);
+				if (week) {
+					const t = dayTarget(r);
+					v.worked += Math.min(w, t);
+					v.missing += Math.max(0, t - w);
+					v.extra += Math.max(0, w - t);
+				} else v.worked += w;
 			}
 			return { vals: v };
-		}),
+		});
+	},
 	// what the bar "is" for the readout: time actually worked
 	shown: (d) => d.vals.worked + d.vals.extra,
 	first: () => {
@@ -392,7 +428,8 @@ const clockChartCfg = {
 			o.push(['Per worked day', formatMinutesAsHM(a.sum / a.days)]);
 			o.push(['Balance', formatSignedMinutes(a.bal)]);
 		}
-		if (a.off) o.push(['Days off', String(a.off)]);
+		if (a.doctor) o.push(['Doctor', formatMinutesAsHM(a.doctor)]);
+		if (a.vacation) o.push(['Vacation', formatMinutesAsHM(a.vacation)]);
 		return o;
 	},
 };
