@@ -26,17 +26,11 @@ let clkWeekOffset = 0;
 const clkSettings = () => S.clk.settings;
 const clkDay = (k) => S.clk.days[k] || null;
 
-const OFF_TYPES = {
-	vacation: 'Vacation',
-	holiday: 'Public holiday',
-	doctor: 'Doctor',
-};
+const OFF_TYPES = { vacation: 'Vacation', holiday: 'Public holiday', doctor: 'Doctor' };
 const dayOff = (d) => (d && d.off && OFF_TYPES[d.off.type] ? d.off : null);
 const isFullOff = (o) => !!o && o.type !== 'doctor' && !(Number(o.min) > 0);
 const offLabel = (o) =>
-	Number(o.min) > 0
-		? `${OFF_TYPES[o.type]} ${formatMinutesAsHM(Number(o.min))}`
-		: OFF_TYPES[o.type];
+	Number(o.min) > 0 ? `${OFF_TYPES[o.type]} ${formatMinutesAsHM(Number(o.min))}` : OFF_TYPES[o.type];
 
 // Minutes expected on a day (the daily target, less any time off).
 function dayTarget(d) {
@@ -55,15 +49,17 @@ function dayWorked(d) {
 	return m > 0 ? m : null;
 }
 
-// Minutes worked so far (works while the day is still open).
+// Minutes worked so far (works while the day is still open). The End stamp
+// records "now" plus the end shift (normally -5 min), so the running total
+// uses that too: it always shows what you would get if you pressed End now.
 function liveWorked(d) {
 	if (!d || !d.s) return null;
 	if (d.e) return dayWorked(d);
-	const now = toMin(hm(new Date()));
 	let m;
 	if (d.ls && !d.le) m = toMin(d.ls) - toMin(d.s);
 	else {
-		m = now - toMin(d.s);
+		const shift = Number(clkSettings().endShift) || 0;
+		m = toMin(hm(new Date(Date.now() + shift * 60000))) - toMin(d.s);
 		if (d.ls && d.le) m -= Math.max(0, toMin(d.le) - toMin(d.ls));
 	}
 	return Math.max(0, m);
@@ -74,8 +70,22 @@ const nextStep = (d) => {
 	return null;
 };
 
+// Lunch lasts at least this long: ending it earlier still records start + 30.
+const LUNCH_MIN = 30;
+
+// Waiting for the minimum lunch to pass? (lunch started, not ended, < 30 min)
+function lunchWaiting() {
+	const d = clkDay(ymd(new Date()));
+	return !!(d && d.ls && !d.le && toMin(hm(new Date())) < toMin(d.ls) + LUNCH_MIN);
+}
+
 // The time a stamp would record right now.
 function shiftTime(st) {
+	if (st.k === 'le' && lunchWaiting()) {
+		const d = clkDay(ymd(new Date()));
+		const m = toMin(d.ls) + LUNCH_MIN;
+		return pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+	}
 	const shift = st.shift ? Number(clkSettings()[st.shift]) || 0 : 0;
 	return hm(new Date(Date.now() + shift * 60000));
 }
@@ -122,16 +132,10 @@ function clockLive() {
 	const t = dayTarget(day);
 	const o = dayOff(day);
 	let txt;
-	if (!day.s)
-		txt = o
-			? isFullOff(o)
-				? `${offLabel(o)} · day off`
-				: `${offLabel(o)} · target ${formatMinutesAsHM(t)}`
-			: 'Not started yet.';
+	if (!day.s) txt = o ? (isFullOff(o) ? `${offLabel(o)} · day off` : `${offLabel(o)} · target ${formatMinutesAsHM(t)}`) : 'Not started yet.';
 	else if (day.e)
 		txt = `Done · ${formatMinutesAsHM(w || 0)} worked${w != null ? ` (${formatSignedMinutes(w - t)} vs target)` : ''}`;
-	else
-		txt = `${day.ls && !day.le ? 'On lunch' : 'On the clock'} · ${formatMinutesAsHM(w || 0)} so far`;
+	else txt = `${day.ls && !day.le ? 'On lunch' : 'On the clock'} · ${formatMinutesAsHM(w || 0)} so far`;
 	if (o && day.s) txt = `${offLabel(o)} · ${txt}`;
 	const el = $('#clkSum');
 	if (el.textContent !== txt) el.textContent = txt;
@@ -141,25 +145,19 @@ function renderClock(force) {
 	const tk = ymd(new Date());
 	const day = clkDay(tk) || {};
 	const nx = nextStep(day);
-	$('#clkDate').textContent = loc(new Date(), {
-		weekday: 'long',
-		day: 'numeric',
-		month: 'long',
-	});
+	$('#clkDate').textContent = loc(new Date(), { weekday: 'long', day: 'numeric', month: 'long' });
 	CLK_STEPS.forEach((st) => {
 		const el = $('#st-' + st.k);
 		const done = !!day[st.k];
 		const isNext = !!nx && nx.k === st.k;
 		el.className = 'stamp' + (isNext ? ' next' : '');
 		el.disabled = !isNext;
-		el.querySelector('.sv').textContent = done
-			? day[st.k]
-			: isNext
-				? shiftTime(st)
-				: '–:–';
+		el.querySelector('.sv').textContent = done ? day[st.k] : isNext ? shiftTime(st) : '–:–';
 		const sh = st.shift ? Number(clkSettings()[st.shift]) || 0 : 0;
 		el.querySelector('.sh').textContent = done
 			? 'Recorded'
+			: isNext && st.k === 'le'
+				? `Press to record · lunch is at least ${LUNCH_MIN} min`
 			: isNext
 				? sh
 					? `Press to record now ${sh > 0 ? '+' : '−'}${Math.abs(sh)} min`
@@ -170,15 +168,13 @@ function renderClock(force) {
 	clockLive();
 	chartDraw('clock');
 	renderOffList();
-	if (force || !$('#clkTable').contains(document.activeElement))
-		renderClockTable();
+	if (force || !$('#clkTable').contains(document.activeElement)) renderClockTable();
 }
 
 function renderClockTable() {
 	const m = addD(mondayOf(new Date()), 7 * clkWeekOffset);
 	const tk = ymd(new Date());
-	$('#twTitle').textContent =
-		(clkWeekOffset === 0 ? 'This week · ' : '') + weekTitle(m);
+	$('#twTitle').textContent = (clkWeekOffset === 0 ? 'This week · ' : '') + weekTitle(m);
 	$('[data-tw="1"]').disabled = clkWeekOffset >= 0;
 	let rows = '';
 	let sum = 0;
@@ -198,9 +194,7 @@ function renderClockTable() {
 		}
 		const inp = (f) =>
 			`<td><input class="cell" type="time" data-d="${k}" data-k="${f}" value="${r[f] || ''}" aria-label="${loc(d, { weekday: 'long' })} ${STEP_LABEL[f]}"></td>`;
-		const badge = o
-			? ` <span class="badge off-${o.type}">${esc(offLabel(o))}</span>`
-			: '';
+		const badge = o ? ` <span class="badge off-${o.type}">${esc(offLabel(o))}</span>` : '';
 		rows += `<tr class="${k === tk ? 'today' : ''}"><th scope="row">${loc(d, { weekday: 'short', day: 'numeric', month: 'short' })}${badge}</th>${inp('s')}${inp('ls')}${inp('le')}${inp('e')}<td class="num">${w ? formatMinutesAsHM(w) : '–'}</td><td class="num ${w ? (w >= t ? 'pos' : 'neg') : ''}">${w ? formatSignedMinutes(w - t) : '–'}</td></tr>`;
 	}
 	$('#clkTable').innerHTML =
@@ -233,13 +227,11 @@ function addOff() {
 	const to = type === 'doctor' ? '' : $('#offTo').value;
 	const hours = $('#offDur').value;
 	if (!from) return offMsg('Pick a date.', true);
-	if (to && to < from)
-		return offMsg('The end date is before the start date.', true);
+	if (to && to < from) return offMsg('The end date is before the start date.', true);
 	const off = { type };
 	if (type === 'doctor' || hours !== '') {
 		const min = Math.round(Number(hours) * 60);
-		if (!(min > 0 && min <= 1440))
-			return offMsg('Enter how many hours you are away, e.g. 1.5.', true);
+		if (!(min > 0 && min <= 1440)) return offMsg('Enter how many hours you are away, e.g. 1.5.', true);
 		off.min = min;
 	}
 	const dates = offDates(from, to, type !== 'doctor' && $('#offWk').checked);
@@ -254,9 +246,7 @@ function addOff() {
 		},
 		`${OFF_TYPES[type].toLowerCase()} ${dates[0]}${dates.length > 1 ? ' to ' + dates[dates.length - 1] : ''}`,
 	);
-	offMsg(
-		`${OFF_TYPES[type]} added for ${dates.length} day${dates.length === 1 ? '' : 's'}.`,
-	);
+	offMsg(`${OFF_TYPES[type]} added for ${dates.length} day${dates.length === 1 ? '' : 's'}.`);
 	$('#offTo').value = '';
 	$('#offDur').value = '';
 }
@@ -304,12 +294,7 @@ function renderOffList() {
 	if (!el) return;
 	const from = ymd(addD(new Date(), -30));
 	const groups = offGroups().filter((g) => g.dates[g.dates.length - 1] >= from);
-	const fmt = (k) =>
-		loc(new Date(k + 'T00:00'), {
-			weekday: 'short',
-			day: 'numeric',
-			month: 'short',
-		});
+	const fmt = (k) => loc(new Date(k + 'T00:00'), { weekday: 'short', day: 'numeric', month: 'short' });
 	el.innerHTML = groups.length
 		? groups
 				.map((g) => {
@@ -331,9 +316,7 @@ const cssVar = (name) =>
 function dayOffMinutes(r) {
 	const o = dayOff(r);
 	if (!o) return 0;
-	return isFullOff(o)
-		? Number(clkSettings().dayTarget) || 0
-		: Number(o.min) || 0;
+	return isFullOff(o) ? Number(clkSettings().dayTarget) || 0 : Number(o.min) || 0;
 }
 
 // Totals for a list of buckets. Days with no data are ignored.
@@ -355,8 +338,7 @@ function clkAgg(list) {
 	return a;
 }
 
-const clkWeekView = () =>
-	!!(charts.clock && charts.clock.st && charts.clock.st.range === 'week');
+const clkWeekView = () => !!(charts.clock && charts.clock.st && charts.clock.st.range === 'week');
 
 // Bars are time worked (grey) with doctor and vacation hours stacked on top.
 // Only the week view compares each finished day with its target: the gap up
@@ -370,19 +352,11 @@ const clockChartCfg = {
 		const base = [
 			{ k: 'worked', n: 'Worked', color: cssVar('--hours') || '#8b94a5' },
 			{ k: 'doctor', n: 'Doctor', color: cssVar('--doctor') || '#4fc3f7' },
-			{
-				k: 'vacation',
-				n: 'Vacation',
-				color: cssVar('--vacation') || '#7b6cff',
-			},
+			{ k: 'vacation', n: 'Vacation', color: cssVar('--vacation') || '#7b6cff' },
 		];
 		return clkWeekView()
 			? base.concat([
-					{
-						k: 'missing',
-						n: 'Under target',
-						color: cssVar('--neg') || '#ff7a7a',
-					},
+					{ k: 'missing', n: 'Under target', color: cssVar('--neg') || '#ff7a7a' },
 					{ k: 'extra', n: 'Over target', color: cssVar('--pos') || '#6fd08c' },
 				])
 			: base;
@@ -394,8 +368,7 @@ const clockChartCfg = {
 			for (let d = new Date(b.s); d.getTime() < b.e; d = addD(d, 1)) {
 				const r = clkDay(ymd(d));
 				const o = dayOff(r);
-				if (o)
-					v[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
+				if (o) v[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
 				const w = dayWorked(r);
 				if (!w) continue;
 				if (week) {
@@ -443,9 +416,7 @@ function clockInit() {
 		const doc = $('#offType').value === 'doctor';
 		$('#offToF').hidden = doc;
 		$('#offWkF').hidden = doc;
-		$('#offDurF label').textContent = doc
-			? 'Time away (hours)'
-			: 'Hours off (empty = whole day)';
+		$('#offDurF label').textContent = doc ? 'Time away (hours)' : 'Hours off (empty = whole day)';
 		$('#offDur').placeholder = doc ? 'e.g. 1.5' : 'whole day';
 	};
 	$('#offType').addEventListener('change', syncOffForm);
