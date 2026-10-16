@@ -55,15 +55,17 @@ function dayWorked(d) {
 	return m > 0 ? m : null;
 }
 
-// Minutes worked so far (works while the day is still open).
+// Minutes worked so far (works while the day is still open). The End stamp
+// records "now" plus the end shift (normally -5 min), so the running total
+// uses that too: it always shows what you would get if you pressed End now.
 function liveWorked(d) {
 	if (!d || !d.s) return null;
 	if (d.e) return dayWorked(d);
-	const now = toMin(hm(new Date()));
 	let m;
 	if (d.ls && !d.le) m = toMin(d.ls) - toMin(d.s);
 	else {
-		m = now - toMin(d.s);
+		const shift = Number(clkSettings().endShift) || 0;
+		m = toMin(hm(new Date(Date.now() + shift * 60000))) - toMin(d.s);
 		if (d.ls && d.le) m -= Math.max(0, toMin(d.le) - toMin(d.ls));
 	}
 	return Math.max(0, m);
@@ -74,8 +76,27 @@ const nextStep = (d) => {
 	return null;
 };
 
+// Lunch lasts at least this long: ending it earlier still records start + 30.
+const LUNCH_MIN = 30;
+
+// Waiting for the minimum lunch to pass? (lunch started, not ended, < 30 min)
+function lunchWaiting() {
+	const d = clkDay(ymd(new Date()));
+	return !!(
+		d &&
+		d.ls &&
+		!d.le &&
+		toMin(hm(new Date())) < toMin(d.ls) + LUNCH_MIN
+	);
+}
+
 // The time a stamp would record right now.
 function shiftTime(st) {
+	if (st.k === 'le' && lunchWaiting()) {
+		const d = clkDay(ymd(new Date()));
+		const m = toMin(d.ls) + LUNCH_MIN;
+		return pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+	}
 	const shift = st.shift ? Number(clkSettings()[st.shift]) || 0 : 0;
 	return hm(new Date(Date.now() + shift * 60000));
 }
@@ -160,11 +181,13 @@ function renderClock(force) {
 		const sh = st.shift ? Number(clkSettings()[st.shift]) || 0 : 0;
 		el.querySelector('.sh').textContent = done
 			? 'Recorded'
-			: isNext
-				? sh
-					? `Press to record now ${sh > 0 ? '+' : '−'}${Math.abs(sh)} min`
-					: 'Press to record now'
-				: '';
+			: isNext && st.k === 'le'
+				? `Press to record · lunch is at least ${LUNCH_MIN} min`
+				: isNext
+					? sh
+						? `Press to record now ${sh > 0 ? '+' : '−'}${Math.abs(sh)} min`
+						: 'Press to record now'
+					: '';
 	});
 	$('#clkUndo').disabled = !CLK_STEPS.some((st) => day[st.k]);
 	clockLive();
