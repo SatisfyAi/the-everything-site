@@ -327,9 +327,9 @@ function weekTitle(monday) {
 		monday.getMonth() === last.getMonth() &&
 		monday.getFullYear() === last.getFullYear()
 	) {
-		return `${monday.getDate()} – ${last.getDate()} ${loc(last, { month: 'long' })} ${last.getFullYear()}`;
+		return `${monday.getDate()} - ${last.getDate()} ${loc(last, { month: 'long' })} ${last.getFullYear()}`;
 	}
-	return `${loc(monday, { day: 'numeric', month: 'short' })} – ${loc(last, { day: 'numeric', month: 'short' })} ${last.getFullYear()}`;
+	return `${loc(monday, { day: 'numeric', month: 'short' })} - ${loc(last, { day: 'numeric', month: 'short' })} ${last.getFullYear()}`;
 }
 
 // Time slots for a range. `off` counts periods back from now (0 = current).

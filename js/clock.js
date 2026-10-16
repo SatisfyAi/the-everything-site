@@ -156,7 +156,7 @@ function renderClock(force) {
 			? day[st.k]
 			: isNext
 				? shiftTime(st)
-				: '–:–';
+				: '-:-';
 		const sh = st.shift ? Number(clkSettings()[st.shift]) || 0 : 0;
 		el.querySelector('.sh').textContent = done
 			? 'Recorded'
@@ -201,11 +201,11 @@ function renderClockTable() {
 		const badge = o
 			? ` <span class="badge off-${o.type}">${esc(offLabel(o))}</span>`
 			: '';
-		rows += `<tr class="${k === tk ? 'today' : ''}"><th scope="row">${loc(d, { weekday: 'short', day: 'numeric', month: 'short' })}${badge}</th>${inp('s')}${inp('ls')}${inp('le')}${inp('e')}<td class="num">${w ? formatMinutesAsHM(w) : '–'}</td><td class="num ${w ? (w >= t ? 'pos' : 'neg') : ''}">${w ? formatSignedMinutes(w - t) : '–'}</td></tr>`;
+		rows += `<tr class="${k === tk ? 'today' : ''}"><th scope="row">${loc(d, { weekday: 'short', day: 'numeric', month: 'short' })}${badge}</th>${inp('s')}${inp('ls')}${inp('le')}${inp('e')}<td class="num">${w ? formatMinutesAsHM(w) : '-'}</td><td class="num ${w ? (w >= t ? 'pos' : 'neg') : ''}">${w ? formatSignedMinutes(w - t) : '-'}</td></tr>`;
 	}
 	$('#clkTable').innerHTML =
 		`<thead><tr><th>Day</th><th>Start</th><th>Lunch start</th><th>Lunch end</th><th>End</th><th class="num">Worked</th><th class="num">Vs target</th></tr></thead><tbody>${rows}</tbody>` +
-		`<tfoot><tr><th colspan="5">Week total</th><td class="num">${formatMinutesAsHM(sum)}</td><td class="num ${counted ? (bal >= 0 ? 'pos' : 'neg') : ''}">${counted ? formatSignedMinutes(bal) : '–'}</td></tr></tfoot>`;
+		`<tfoot><tr><th colspan="5">Week total</th><td class="num">${formatMinutesAsHM(sum)}</td><td class="num ${counted ? (bal >= 0 ? 'pos' : 'neg') : ''}">${counted ? formatSignedMinutes(bal) : '-'}</td></tr></tfoot>`;
 }
 
 /* ---------- time off (vacation, holidays, doctor) ---------- */
@@ -315,7 +315,7 @@ function renderOffList() {
 				.map((g) => {
 					const a = g.dates[0];
 					const b = g.dates[g.dates.length - 1];
-					const when = a === b ? fmt(a) : `${fmt(a)} – ${fmt(b)}`;
+					const when = a === b ? fmt(a) : `${fmt(a)} - ${fmt(b)}`;
 					const n = g.dates.length;
 					return `<div class="offrow"><span class="when">${when}</span><span class="what"><span class="badge off-${g.o.type}">${esc(offLabel(g.o))}</span>${n > 1 ? `<span class="muted">${n} days</span>` : ''}</span><button class="x del" type="button" data-offdel="${g.dates.join(',')}" aria-label="Remove">×</button></div>`;
 				})
