@@ -229,7 +229,7 @@ function tick() {
 
 /* ---------- events ---------- */
 document.addEventListener('click', (e) => {
-	const t = e.target.closest('button,a,[data-v]');
+	const t = e.target.closest('button,a,[data-v]:not(body)');
 	if (!t) return;
 	if (t.dataset.v) {
 		e.preventDefault();
