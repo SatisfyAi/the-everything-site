@@ -1452,7 +1452,6 @@ textarea {
 .panel {
 	gap: 4px;
 	padding: 12px 14px;
-	cursor: pointer;
 }
 .panel .p-big {
 	font-size: clamp(20px, 5.4vw, 30px);
