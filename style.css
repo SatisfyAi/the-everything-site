@@ -486,6 +486,8 @@ main {
 input[type='text'],
 input[type='number'],
 input[type='password'],
+input[type='search'],
+textarea,
 input[type='date'],
 input[type='time'],
 select {
@@ -1290,5 +1292,109 @@ input.cell {
 @media (max-width: 860px) {
 	.glasscard .big {
 		font-size: clamp(34px, 9vw, 48px);
+	}
+}
+
+/* ---------- staff & reminders ---------- */
+textarea {
+	resize: vertical;
+	font-family: 'DM Mono', ui-monospace, monospace;
+	line-height: 1.5;
+}
+.reminders {
+	display: grid;
+	gap: 8px;
+}
+.remind {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	padding: 10px 14px;
+	border: 1px solid var(--line);
+	border-left: 3px solid var(--muted);
+	border-radius: 12px;
+	background: var(--card);
+}
+.remind.now {
+	border-left-color: var(--clock);
+	background: color-mix(in srgb, var(--clock) 12%, var(--card));
+}
+.rwhen {
+	flex: none;
+	min-width: 110px;
+	font:
+		500 12px/1.4 'DM Mono',
+		ui-monospace,
+		monospace;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--muted);
+}
+.remind.now .rwhen {
+	color: var(--text);
+}
+.rtxt {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px 16px;
+}
+.mdate {
+	margin: 14px 0 4px;
+	font:
+		500 12px/1.4 'DM Mono',
+		ui-monospace,
+		monospace;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+.mdate .muted {
+	text-transform: none;
+	letter-spacing: 0;
+}
+.mrow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 6px 0;
+	border-bottom: 1px solid var(--line);
+}
+.mrow .badge {
+	margin-left: 0;
+}
+.srow {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--line);
+}
+.srow:last-child {
+	border-bottom: 0;
+}
+.sinfo {
+	display: grid;
+	gap: 1px;
+	min-width: 0;
+}
+.sinfo b {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.smeta {
+	color: var(--text);
+}
+@media (max-width: 720px) {
+	.remind {
+		flex-direction: column;
+		gap: 2px;
+	}
+	.rwhen {
+		min-width: 0;
+	}
+	#stfSearch {
+		max-width: none !important;
+		flex: 1 1 100%;
 	}
 }

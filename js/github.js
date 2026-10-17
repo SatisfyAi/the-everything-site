@@ -24,6 +24,7 @@ const REPO_CONFIG = {
 		work: 'data.json',
 		hydration: 'hydration-data.json',
 		clock: 'clock-data.json',
+		staff: 'staff-data.json',
 	},
 };
 
@@ -36,7 +37,7 @@ const Store = (function () {
 	];
 	const CACHE_KEY = 'daybook-cache-v1';
 	const LOCAL_PREFIX = 'daybook:f:';
-	const NAMES = ['work', 'hydration', 'clock'];
+	const NAMES = ['work', 'hydration', 'clock', 'staff'];
 
 	const S = {
 		mode: 'local', // 'github' once a token is saved
@@ -481,7 +482,8 @@ const Store = (function () {
 		return (
 			(l.work && l.work.sessions.length > 0) ||
 			(l.hydration && l.hydration.entries.length > 0) ||
-			(l.clock && Object.keys(l.clock.days).length > 0)
+			(l.clock && Object.keys(l.clock.days).length > 0) ||
+			(l.staff && l.staff.staff.length > 0)
 		);
 	};
 	// Merges device-only records into the repo files. Nothing is overwritten:
@@ -524,6 +526,16 @@ const Store = (function () {
 					});
 				},
 				'import job clock data from this device',
+			);
+		if (local.staff)
+			S.commit(
+				'staff',
+				(d) => {
+					local.staff.staff.forEach((p) => {
+						if (!d.staff.some((x) => x.id === p.id)) d.staff.push(p);
+					});
+				},
+				'import staff list from this device',
 			);
 	};
 

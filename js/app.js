@@ -27,10 +27,10 @@
 	}
 })();
 
-const VIEWS = ['today', 'water', 'discord', 'clock', 'settings'];
+const VIEWS = ['today', 'water', 'discord', 'clock', 'staff', 'settings'];
 
 // Current data for each file (read-only; every change goes through Store.commit).
-const S = { work: null, hyd: null, clk: null };
+const S = { work: null, hyd: null, clk: null, stf: null };
 
 let cur = 'today';
 let lastRefresh = Date.now();
@@ -42,6 +42,7 @@ function rebuild() {
 	S.work = Store.get('work');
 	S.hyd = Store.get('hydration');
 	S.clk = Store.get('clock');
+	S.stf = Store.get('staff');
 }
 
 /* ---------- navigation ---------- */
@@ -136,6 +137,8 @@ function renderToday() {
 		month: 'long',
 	});
 
+	renderStaffToday();
+
 	// hydration
 	const { by, total } = hydTotals(todayHydEntries());
 	const goal = hydGoal();
@@ -199,6 +202,7 @@ function renderAll(forceSettings) {
 	renderSyncStatus();
 	renderBanner();
 	renderToday();
+	if (cur === 'staff') renderStaff();
 	if (cur === 'water') renderWater();
 	if (cur === 'discord') renderWork();
 	if (cur === 'clock') renderClock(false);
@@ -308,6 +312,7 @@ function init() {
 	hydInit();
 	workInit();
 	clockInit();
+	staffInit();
 	settingsInit();
 
 	let start = 'today';

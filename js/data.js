@@ -35,14 +35,14 @@ const DEFAULT_DRINKS = [
 
 // Amount logged by one tap on a drink (editable in Settings).
 const DEFAULT_TAP = {
-	Water: 200,
+	Water: 250,
 	Tea: 200,
 	Juice: 200,
 	Milk: 200,
 	Coffee: 150,
 	Soda: 330,
 };
-const DEFAULT_TAP_FALLBACK = 200;
+const DEFAULT_TAP_FALLBACK = 250;
 const HYDRATION_PRESETS = [200, 400, 500, 1000, 1500, 2000];
 
 const DEFAULT_CLOCK_SETTINGS = { startShift: 5, endShift: -5, dayTarget: 480 };
@@ -55,10 +55,11 @@ const EMPTY_FILE = {
 		settings: { goal: 2000, amounts: clone(DEFAULT_TAP) },
 	}),
 	clock: () => ({ settings: clone(DEFAULT_CLOCK_SETTINGS), days: {} }),
+	staff: () => ({ staff: [] }),
 };
 
 // Which list inside each file holds the records.
-const ITEMS_KEY = { work: 'sessions', hydration: 'entries' };
+const ITEMS_KEY = { work: 'sessions', hydration: 'entries', staff: 'staff' };
 
 // Fills in anything missing (new file, older file format) without touching
 // what is there. Mutates and returns `data`.
@@ -76,6 +77,8 @@ function normalizeFile(name, data) {
 		if (!(Number(d.settings.goal) > 0)) d.settings.goal = 2000;
 		if (!d.settings.amounts || typeof d.settings.amounts !== 'object')
 			d.settings.amounts = clone(DEFAULT_TAP);
+	} else if (name === 'staff') {
+		if (!Array.isArray(d.staff)) d.staff = [];
 	} else if (name === 'clock') {
 		if (!d.settings || typeof d.settings !== 'object') d.settings = {};
 		['startShift', 'endShift', 'dayTarget'].forEach((k) => {

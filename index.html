@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=2" />
+		<link rel="icon" type="image/png" href="hub.png?v=4" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=2" />
+		<link rel="stylesheet" href="style.css?v=4" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -57,6 +57,14 @@
 						<circle cx="12" cy="14" r="7" />
 						<path d="M12 14v-4M9 3h6M18.5 6.5L20 5" /></svg
 					><span>Discord</span></a
+				>
+				<a href="#staff" data-v="staff" class="n-staff"
+					><svg viewBox="0 0 24 24">
+						<circle cx="9" cy="8" r="3.2" />
+						<path
+							d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14.3c1.8.8 3 2.6 3 4.7"
+						/></svg
+					><span>Staff</span></a
 				>
 				<a href="#clock" data-v="clock" class="n-clock"
 					><svg viewBox="0 0 24 24">
@@ -93,6 +101,7 @@
 					<div class="eyebrow">Today</div>
 					<h1 class="h-display" id="todayDate">&nbsp;</h1>
 				</div>
+				<div id="stfToday" class="reminders" hidden></div>
 				<div class="panels">
 					<article class="panel water" id="hubWater"></article>
 					<article class="panel discord" id="hubWork"></article>
@@ -408,6 +417,102 @@
 				</div>
 			</section>
 
+			<!-- ===================== STAFF ===================== -->
+			<section id="v-staff" class="view" hidden>
+				<div>
+					<div class="eyebrow">Team</div>
+					<h1 class="h-display">Staff</h1>
+				</div>
+
+				<div class="card">
+					<div class="chart-head">
+						<div class="lab" style="margin: 0">Upcoming milestones</div>
+						<select id="stfRange" class="monthsel" aria-label="Period">
+							<option value="30">Next 30 days</option>
+							<option value="thisMonth">This month</option>
+							<option value="nextMonth">Next month</option>
+							<option value="90">Next 3 months</option>
+						</select>
+					</div>
+					<div id="stfUpcoming" style="margin-top: 8px"></div>
+					<p class="muted small" style="margin: 12px 0 0">
+						Milestones are at 6 months, then every year on the join date. They
+						stop when someone leaves. Reminders show on the Today page 7 days
+						before, 2 days before and on the day.
+					</p>
+				</div>
+
+				<div class="card">
+					<div class="lab" id="stfFormTitle">Add a staff member</div>
+					<div class="form">
+						<div class="field">
+							<label for="stfName">Name</label
+							><input
+								id="stfName"
+								type="text"
+								maxlength="60"
+								autocomplete="off"
+							/>
+						</div>
+						<div class="field">
+							<label for="stfJoined">Joined</label
+							><input id="stfJoined" type="date" />
+						</div>
+						<div class="field">
+							<label for="stfLeft">Left (optional)</label
+							><input id="stfLeft" type="date" />
+						</div>
+					</div>
+					<div class="addrow">
+						<button class="btn" id="stfAdd" type="button">Add</button>
+						<button class="btn ghost" id="stfCancel" type="button" hidden>
+							Cancel edit
+						</button>
+					</div>
+					<div class="note" id="stfMsg" role="status"></div>
+					<details class="more" id="stfImport">
+						<summary>Import a list</summary>
+						<p class="muted small" style="margin: 0 0 10px">
+							One person per line: <code>name, joined, left</code> (left is
+							optional). Dates like <code>2025-03-14</code> or
+							<code>14.03.2025</code>.
+						</p>
+						<textarea
+							id="stfBulk"
+							rows="7"
+							spellcheck="false"
+							placeholder="Alex, 14.03.2025&#10;Sam, 2024-09-01, 2025-12-31"
+						></textarea>
+						<div class="addrow">
+							<button class="btn sm" id="stfBulkAdd" type="button">
+								Import
+							</button>
+						</div>
+						<div class="note" id="stfBulkMsg" role="status"></div>
+					</details>
+				</div>
+
+				<div class="card">
+					<div class="chart-head">
+						<div class="tabs" id="stfTabs" role="group" aria-label="Show">
+							<button class="tab" type="button" data-f="current">
+								Current
+							</button>
+							<button class="tab" type="button" data-f="former">Former</button>
+							<button class="tab" type="button" data-f="all">All</button>
+						</div>
+						<input
+							id="stfSearch"
+							type="search"
+							placeholder="Search name"
+							aria-label="Search name"
+							style="max-width: 220px"
+						/>
+					</div>
+					<div id="stfList" style="margin-top: 6px"></div>
+				</div>
+			</section>
+
 			<!-- ===================== SETTINGS ===================== -->
 			<section id="v-settings" class="view" hidden>
 				<div>
@@ -560,15 +665,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=2"></script>
-		<script src="js/data.js?v=2"></script>
-		<script src="js/github.js?v=2"></script>
-		<script src="js/timer.js?v=2"></script>
-		<script src="js/chart.js?v=2"></script>
-		<script src="js/hydration.js?v=2"></script>
-		<script src="js/work.js?v=2"></script>
-		<script src="js/clock.js?v=2"></script>
-		<script src="js/settings.js?v=2"></script>
-		<script src="js/app.js?v=2"></script>
+		<script src="js/util.js?v=4"></script>
+		<script src="js/data.js?v=4"></script>
+		<script src="js/github.js?v=4"></script>
+		<script src="js/timer.js?v=4"></script>
+		<script src="js/chart.js?v=4"></script>
+		<script src="js/hydration.js?v=4"></script>
+		<script src="js/work.js?v=4"></script>
+		<script src="js/clock.js?v=4"></script>
+		<script src="js/staff.js?v=4"></script>
+		<script src="js/settings.js?v=4"></script>
+		<script src="js/app.js?v=4"></script>
 	</body>
 </html>
