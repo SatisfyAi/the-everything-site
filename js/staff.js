@@ -87,32 +87,40 @@ function tenure(from, to) {
 	return y ? `${y}y${m ? ` ${m}m` : ''}` : `${m}m`;
 }
 
-/* ---------- Today: reminders under the date ---------- */
+/* ---------- Today: milestones under the date ---------- */
+// A timeline of the next 7 days (today included). Everything further ahead is
+// on the Staff page.
+const TODAY_WINDOW = 7;
+
+const whoHtml = (m) =>
+	`<span class="rit"><b>${esc(m.person.name)}</b> · ${milestoneLabel(m.months)}</span>`;
+
+// Milestones grouped per date for the next `days` days: [{ date, n, items }]
+function milestonesByDay(days) {
+	const now = new Date();
+	const ms = milestonesBetween(ymd(now), ymd(addD(now, days)));
+	const out = [];
+	ms.forEach((m) => {
+		let g = out[out.length - 1];
+		if (!g || g.date !== m.date)
+			out.push((g = { date: m.date, n: daysUntil(m.date), items: [] }));
+		g.items.push(m);
+	});
+	return out;
+}
+
 function renderStaffToday() {
 	const el = $('#stfToday');
 	if (!el) return;
-	const now = new Date();
-	let html = '';
-	REMIND_DAYS.forEach((n) => {
-		const k = ymd(addD(now, n));
-		const ms = milestonesBetween(k, k);
-		if (!ms.length) return;
-		const when =
-			n === 0
-				? 'Today'
-				: `${n === 1 ? 'Tomorrow' : `In ${n} days`} · ${shortDate(k)}`;
-		html +=
-			`<div class="remind${n === 0 ? ' now' : ''}"><span class="rwhen">${esc(when)}</span><span class="rtxt">` +
-			ms
-				.map(
-					(m) =>
-						`<span class="rit"><b>${esc(m.person.name)}</b> · ${milestoneLabel(m.months)}</span>`,
-				)
-				.join('') +
-			'</span></div>';
-	});
+	const days = milestonesByDay(TODAY_WINDOW);
+	const html = days
+		.map(
+			(g) =>
+				`<div class="tline${g.n === 0 ? ' now' : ''}${REMIND_DAYS.includes(g.n) ? ' rem' : ''}"><i class="tdot"></i><div class="tdate">${esc(shortDate(g.date))}<span class="muted"> · ${inDays(g.n)}</span></div><div class="tnames">${g.items.map(whoHtml).join('')}</div></div>`,
+		)
+		.join('');
 	el.hidden = !html;
-	el.innerHTML = html;
+	el.innerHTML = html ? `<div class="tl-wrap">${html}</div>` : '';
 }
 
 /* ---------- Staff page ---------- */
