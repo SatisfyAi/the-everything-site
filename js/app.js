@@ -180,7 +180,7 @@ function renderToday() {
 	const off = dayOff(day);
 	$('#hubClock').innerHTML =
 		`<span class="p-title">Job clock</span>` +
-		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : 'nothing'}</div>` +
+		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : '0h'}</div>` +
 		(off
 			? `<div class="muted">${esc(offLabel(off))}${isFullOff(off) ? ' · day off' : ''}</div>`
 			: `<div class="muted">${day.e ? 'worked' : nx ? 'so far' : 'done'}</div>`) +
