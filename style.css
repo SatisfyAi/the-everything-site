@@ -684,7 +684,7 @@ input[type='checkbox'] {
 	content: '+ ';
 }
 .more[open] summary::before {
-	content: '– ';
+	content: '- ';
 }
 .more[open] summary {
 	margin-bottom: 14px;
