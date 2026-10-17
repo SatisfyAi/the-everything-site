@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=6" />
+		<link rel="icon" type="image/png" href="hub.png?v=7" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=6" />
+		<link rel="stylesheet" href="style.css?v=7" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -101,11 +101,21 @@
 					<div class="eyebrow">Today</div>
 					<h1 class="h-display" id="todayDate">&nbsp;</h1>
 				</div>
-				<div id="stfToday" class="reminders" hidden></div>
 				<div class="panels">
-					<article class="panel water" id="hubWater"></article>
-					<article class="panel discord" id="hubWork"></article>
-					<article class="panel clock" id="hubClock"></article>
+					<article class="panel water" id="hubWater" data-v="water"></article>
+					<article
+						class="panel discord"
+						id="hubWork"
+						data-v="discord"
+					></article>
+					<article class="panel clock" id="hubClock" data-v="clock"></article>
+				</div>
+				<div id="stfWrap" hidden>
+					<div class="sec-head">
+						<h2 class="h2">Upcoming milestones</h2>
+						<span class="muted small">next 7 days</span>
+					</div>
+					<div id="stfToday" class="reminders"></div>
 				</div>
 			</section>
 
@@ -665,16 +675,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=6"></script>
-		<script src="js/data.js?v=6"></script>
-		<script src="js/github.js?v=6"></script>
-		<script src="js/timer.js?v=6"></script>
-		<script src="js/chart.js?v=6"></script>
-		<script src="js/hydration.js?v=6"></script>
-		<script src="js/work.js?v=6"></script>
-		<script src="js/clock.js?v=6"></script>
-		<script src="js/staff.js?v=6"></script>
-		<script src="js/settings.js?v=6"></script>
-		<script src="js/app.js?v=6"></script>
+		<script src="js/util.js?v=7"></script>
+		<script src="js/data.js?v=7"></script>
+		<script src="js/github.js?v=7"></script>
+		<script src="js/timer.js?v=7"></script>
+		<script src="js/chart.js?v=7"></script>
+		<script src="js/hydration.js?v=7"></script>
+		<script src="js/work.js?v=7"></script>
+		<script src="js/clock.js?v=7"></script>
+		<script src="js/staff.js?v=7"></script>
+		<script src="js/settings.js?v=7"></script>
+		<script src="js/app.js?v=7"></script>
 	</body>
 </html>

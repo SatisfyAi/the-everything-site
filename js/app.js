@@ -150,13 +150,9 @@ function renderToday() {
 				`<span style="width:${((by[c.key] / den) * 100).toFixed(1)}%;background:${normHex(c.color)}"></span>`,
 		)
 		.join('');
-	const q = quickDrink();
 	$('#hubWater').innerHTML =
-		`<div class="p-head"><span class="p-title">Hydration</span><button class="link" type="button" data-v="water">Open</button></div>` +
-		`<div class="p-big">${formatMl(total)} <small>of ${formatMl(goal)}</small></div><div class="seg">${seg}</div>` +
-		(q
-			? `<button class="btn sm" type="button" data-act="quick-water">+ ${tapAmount(q.key)}ml ${esc(q.label.toLowerCase())}</button>`
-			: '');
+		`<span class="p-title">Hydration</span>` +
+		`<div class="p-big">${formatMl(total)}</div><div class="muted">of ${formatMl(goal)}</div><div class="seg">${seg}</div>`;
 
 	// Discord time
 	const ts = timerGetState();
@@ -166,17 +162,13 @@ function renderToday() {
 	if (ts) {
 		body =
 			`<div class="p-big" id="hubTimer">${formatHMS(timerElapsedSeconds(ts))}</div>` +
-			`<div class="muted">${ts.running ? 'Running' : 'Paused'} · ${esc(workCat(ts.category).label)}</div>` +
-			`<button class="btn sm" type="button" data-v="discord">Open timer</button>`;
+			`<div class="muted">${ts.running ? 'Running' : 'Paused'} · ${esc(workCat(ts.category).label)}</div>`;
 	} else {
 		body =
-			`<div class="p-big">${formatMinutesAsHM(workMinutesBetween(t0, t1))} <small>today</small></div>` +
-			`<div class="muted">${formatMinutesAsHM(workMinutesBetween(mondayOf(new Date()).getTime(), t1))} this week</div>` +
-			`<button class="btn sm" type="button" data-v="discord">Start timer</button>`;
+			`<div class="p-big">${formatMinutesAsHM(workMinutesBetween(t0, t1))}</div>` +
+			`<div class="muted">${formatMinutesAsHM(workMinutesBetween(mondayOf(new Date()).getTime(), t1))} this week</div>`;
 	}
-	$('#hubWork').innerHTML =
-		`<div class="p-head"><span class="p-title">Discord time</span><button class="link" type="button" data-v="discord">Open</button></div>` +
-		body;
+	$('#hubWork').innerHTML = `<span class="p-title">Discord</span>` + body;
 
 	// job clock
 	const day = clkDay(ymd(new Date())) || {};
@@ -187,14 +179,12 @@ function renderToday() {
 	const w = liveWorked(day);
 	const off = dayOff(day);
 	$('#hubClock').innerHTML =
-		`<div class="p-head"><span class="p-title">Job clock</span><button class="link" type="button" data-v="clock">Open</button></div>` +
-		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : 'nothing'} <small>${day.e ? 'worked' : 'so far'}</small></div><div class="dots">${dots}</div>` +
+		`<span class="p-title">Job clock</span>` +
+		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : '-'}</div>` +
 		(off
 			? `<div class="muted">${esc(offLabel(off))}${isFullOff(off) ? ' · day off' : ''}</div>`
-			: '') +
-		(nx
-			? `<button class="btn sm" type="button" data-act="hub-stamp"><span id="hubStampLbl">${nx.n} · ${shiftTime(nx)}</span></button>`
-			: '<div class="muted">Day complete</div>');
+			: `<div class="muted">${day.e ? 'worked' : nx ? 'so far' : 'done'}</div>`) +
+		`<div class="dots">${dots}</div>`;
 }
 
 /* ---------- render everything that is visible ---------- */
@@ -230,11 +220,6 @@ function tick() {
 			if (el) el.textContent = shiftTime(nx);
 		}
 	}
-	const lb = $('#hubStampLbl');
-	if (lb) {
-		const nx = nextStep(clkDay(ymd(new Date())));
-		if (nx) lb.textContent = `${nx.n} · ${shiftTime(nx)}`;
-	}
 	const today = ymd(new Date());
 	if (today !== lastDay) {
 		lastDay = today;
@@ -244,7 +229,7 @@ function tick() {
 
 /* ---------- events ---------- */
 document.addEventListener('click', (e) => {
-	const t = e.target.closest('button,a');
+	const t = e.target.closest('button,a,[data-v]');
 	if (!t) return;
 	if (t.dataset.v) {
 		e.preventDefault();

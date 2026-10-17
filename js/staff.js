@@ -119,7 +119,8 @@ function renderStaffToday() {
 				`<div class="tline${g.n === 0 ? ' now' : ''}${REMIND_DAYS.includes(g.n) ? ' rem' : ''}"><i class="tdot"></i><div class="tdate">${esc(shortDate(g.date))}<span class="muted"> · ${inDays(g.n)}</span></div><div class="tnames">${g.items.map(whoHtml).join('')}</div></div>`,
 		)
 		.join('');
-	el.hidden = !html;
+	const wrap = $('#stfWrap');
+	if (wrap) wrap.hidden = !html;
 	el.innerHTML = html ? `<div class="tl-wrap">${html}</div>` : '';
 }
 
