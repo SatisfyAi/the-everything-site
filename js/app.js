@@ -208,7 +208,7 @@ function renderToday() {
 	} else {
 		body =
 			`<div class="p-big">${formatMinutesAsHM(workMinutesBetween(t0, t1))}</div>` +
-			`<div class="muted">${formatMinutesAsHM(workMinutesBetween(mondayOf(new Date()).getTime(), t1))} this week</div>`;
+			`<div class="muted">${formatMinutesAsHM(workMinutesBetween(new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime(), t1))} this month</div>`;
 	}
 	body += `<div class="seg">${wseg}</div>`;
 	$('#hubWork').innerHTML = `<span class="p-title">Discord</span>` + body;
