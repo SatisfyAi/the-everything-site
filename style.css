@@ -684,7 +684,7 @@ input[type='checkbox'] {
 	content: '+ ';
 }
 .more[open] summary::before {
-	content: '- ';
+	content: '– ';
 }
 .more[open] summary {
 	margin-bottom: 14px;
@@ -1495,5 +1495,16 @@ textarea {
 	.panel .p-title {
 		font-size: 10px;
 		letter-spacing: 0.06em;
+	}
+}
+
+/* Today: no extra scroll room. The page is only as tall as its content, so it
+   scrolls only when the milestones (or banner) really need more space. */
+body[data-v='today'] {
+	min-height: 0;
+}
+@media (max-width: 720px) {
+	html:has(body[data-v='today']) {
+		overscroll-behavior-y: none;
 	}
 }

@@ -130,6 +130,32 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 /* ---------- Today ---------- */
+// Job clock bar: worked (grey), doctor/vacation, and against the daily target
+// the missing part (red, only once the day is finished) or the extra (green).
+function clkBar(day, w) {
+	const target = Number(clkSettings().dayTarget) || 0;
+	const o = dayOff(day);
+	const off = o ? dayOffMinutes(day) : 0;
+	let work = w || 0;
+	const sum = work + off;
+	const seg = (m, col) =>
+		`<span style="width:${((m / Math.max(target, sum, 1)) * 100).toFixed(2)}%;background:var(${col})"></span>`;
+	let html = '';
+	if (sum > target && work > 0) {
+		const extra = Math.min(work, sum - target);
+		html +=
+			seg(work - extra, '--hours') +
+			(o ? seg(off, o.type === 'doctor' ? '--doctor' : '--vacation') : '') +
+			seg(extra, '--pos');
+	} else {
+		html +=
+			seg(work, '--hours') +
+			(o ? seg(off, o.type === 'doctor' ? '--doctor' : '--vacation') : '');
+		if (day.e && target > sum) html += seg(target - sum, '--neg');
+	}
+	return html;
+}
+
 function renderToday() {
 	$('#todayDate').textContent = loc(new Date(), {
 		weekday: 'long',
@@ -158,6 +184,22 @@ function renderToday() {
 	const ts = timerGetState();
 	const t0 = sod(new Date()).getTime();
 	const t1 = addD(sod(new Date()), 1).getTime();
+	// minutes per category today (plus the running timer) -> a full bar
+	const wby = {};
+	S.work.sessions.forEach((x) => {
+		const m = sessionMinutesIn(x, t0, t1);
+		if (m > 0) wby[x.category] = (wby[x.category] || 0) + m;
+	});
+	if (ts)
+		wby[ts.category] = (wby[ts.category] || 0) + timerElapsedSeconds(ts) / 60;
+	const wtot = Object.values(wby).reduce((a, b) => a + b, 0);
+	const wseg = workCats()
+		.filter((c) => wby[c.key] > 0)
+		.map(
+			(c) =>
+				`<span style="width:${((wby[c.key] / wtot) * 100).toFixed(2)}%;background:${normHex(c.color)}"></span>`,
+		)
+		.join('');
 	let body;
 	if (ts) {
 		body =
@@ -168,14 +210,12 @@ function renderToday() {
 			`<div class="p-big">${formatMinutesAsHM(workMinutesBetween(t0, t1))}</div>` +
 			`<div class="muted">${formatMinutesAsHM(workMinutesBetween(mondayOf(new Date()).getTime(), t1))} this week</div>`;
 	}
+	body += `<div class="seg">${wseg}</div>`;
 	$('#hubWork').innerHTML = `<span class="p-title">Discord</span>` + body;
 
 	// job clock
 	const day = clkDay(ymd(new Date())) || {};
 	const nx = nextStep(day);
-	const dots = CLK_STEPS.map(
-		(st) => `<i class="dot${day[st.k] ? ' on' : ''}" title="${st.n}"></i>`,
-	).join('');
 	const w = liveWorked(day);
 	const off = dayOff(day);
 	$('#hubClock').innerHTML =
@@ -184,7 +224,7 @@ function renderToday() {
 		(off
 			? `<div class="muted">${esc(offLabel(off))}${isFullOff(off) ? ' · day off' : ''}</div>`
 			: `<div class="muted">${day.e ? 'worked' : nx ? 'of 8h' : 'done'}</div>`) +
-		`<div class="dots">${dots}</div>`;
+		`<div class="seg">${clkBar(day, w)}</div>`;
 }
 
 /* ---------- render everything that is visible ---------- */
