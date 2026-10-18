@@ -223,7 +223,7 @@ function renderToday() {
 		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : '0h'}</div>` +
 		(off
 			? `<div class="muted">${esc(offLabel(off))}${isFullOff(off) ? ' · day off' : ''}</div>`
-			: `<div class="muted">${day.e ? 'worked' : nx ? 'so far' : 'done'}</div>`) +
+			: `<div class="muted">${day.e ? 'worked' : nx ? 'of 8h' : 'done'}</div>`) +
 		`<div class="seg">${clkBar(day, w)}</div>`;
 }
 
