@@ -10,7 +10,6 @@ const REMIND_DAYS = [0, 2, 7];
 
 let stfEditId = null;
 let stfFilter = 'current';
-let stfRange = '30';
 let stfQuery = '';
 
 const isDateKey = (s) =>
@@ -125,42 +124,6 @@ function renderStaffToday() {
 }
 
 /* ---------- Staff page ---------- */
-function stfRangeDates() {
-	const now = new Date();
-	const today = ymd(now);
-	if (stfRange === 'thisMonth') {
-		return [today, ymd(new Date(now.getFullYear(), now.getMonth() + 1, 0))];
-	}
-	if (stfRange === 'nextMonth') {
-		return [
-			ymd(new Date(now.getFullYear(), now.getMonth() + 1, 1)),
-			ymd(new Date(now.getFullYear(), now.getMonth() + 2, 0)),
-		];
-	}
-	return [today, ymd(addD(now, Number(stfRange) || 30))];
-}
-
-function renderUpcoming() {
-	const [from, to] = stfRangeDates();
-	const ms = milestonesBetween(from, to);
-	if (!ms.length) {
-		$('#stfUpcoming').innerHTML =
-			'<div class="empty">No milestones in this period.</div>';
-		return;
-	}
-	let html = '';
-	let last = '';
-	ms.forEach((m) => {
-		if (m.date !== last) {
-			last = m.date;
-			const n = daysUntil(m.date);
-			html += `<div class="mdate">${esc(shortDate(m.date))}<span class="muted"> · ${inDays(n)}</span></div>`;
-		}
-		html += `<div class="mrow"><span class="mname">${esc(m.person.name)}</span><span class="badge">${milestoneLabel(m.months)}</span></div>`;
-	});
-	$('#stfUpcoming').innerHTML = html;
-}
-
 function renderStaffList() {
 	const today = ymd(new Date());
 	const q = stfQuery.trim().toLowerCase();
@@ -384,7 +347,6 @@ function renderShare() {
 }
 
 function renderStaff() {
-	renderUpcoming();
 	renderShare();
 	renderStaffList();
 }
@@ -518,10 +480,6 @@ function staffInit() {
 			$('#stfShareBox'),
 			`milestones-${first.getFullYear()}-${pad(first.getMonth() + 1)}.png`,
 		);
-	});
-	$('#stfRange').addEventListener('change', (e) => {
-		stfRange = e.target.value;
-		renderUpcoming();
 	});
 	$('#stfSearch').addEventListener('input', (e) => {
 		stfQuery = e.target.value;
