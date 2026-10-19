@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=11" />
+		<link rel="icon" type="image/png" href="hub.png?v=9" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=11" />
+		<link rel="stylesheet" href="style.css?v=15" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -433,18 +433,23 @@
 				<div class="card">
 					<div class="chart-head">
 						<div class="lab" style="margin: 0">Upcoming milestones</div>
-						<select id="stfRange" class="monthsel" aria-label="Period">
-							<option value="30">Next 30 days</option>
-							<option value="thisMonth">This month</option>
-							<option value="nextMonth">Next month</option>
-							<option value="90">Next 3 months</option>
-						</select>
+						<select
+							id="stfShareMonth"
+							class="monthsel"
+							aria-label="Month"
+						></select>
 					</div>
-					<div id="stfUpcoming" style="margin-top: 8px"></div>
+					<div id="stfShareBox" class="sharebox"></div>
+					<div class="addrow">
+						<button class="btn" id="stfShareDl" type="button">
+							Download image
+						</button>
+					</div>
 					<p class="muted small" style="margin: 12px 0 0">
 						Milestones are at 6 months, then every year on the join date. They
 						stop when someone leaves. Reminders show on the Today page 7 days
-						before, 2 days before and on the day.
+						before, 2 days before and on the day. Download the image to send it
+						to team leads.
 					</p>
 				</div>
 
@@ -671,16 +676,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=11"></script>
-		<script src="js/data.js?v=11"></script>
-		<script src="js/github.js?v=11"></script>
-		<script src="js/timer.js?v=11"></script>
-		<script src="js/chart.js?v=11"></script>
-		<script src="js/hydration.js?v=11"></script>
-		<script src="js/work.js?v=11"></script>
-		<script src="js/clock.js?v=11"></script>
-		<script src="js/staff.js?v=11"></script>
-		<script src="js/settings.js?v=11"></script>
-		<script src="js/app.js?v=11"></script>
+		<script src="js/util.js?v=15"></script>
+		<script src="js/data.js?v=15"></script>
+		<script src="js/github.js?v=15"></script>
+		<script src="js/timer.js?v=15"></script>
+		<script src="js/chart.js?v=15"></script>
+		<script src="js/hydration.js?v=15"></script>
+		<script src="js/work.js?v=15"></script>
+		<script src="js/clock.js?v=15"></script>
+		<script src="js/staff.js?v=15"></script>
+		<script src="js/settings.js?v=15"></script>
+		<script src="js/app.js?v=15"></script>
 	</body>
 </html>
