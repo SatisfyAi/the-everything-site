@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=11" />
+		<link rel="icon" type="image/png" href="hub.png?v=9" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=11" />
+		<link rel="stylesheet" href="style.css?v=13" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -449,6 +449,23 @@
 				</div>
 
 				<div class="card">
+					<div class="chart-head">
+						<div class="lab" style="margin: 0">Share with team leads</div>
+						<select
+							id="stfShareMonth"
+							class="monthsel"
+							aria-label="Month"
+						></select>
+					</div>
+					<div id="stfShareBox" class="sharebox"></div>
+					<div class="addrow">
+						<button class="btn" id="stfShareDl" type="button">
+							Download image
+						</button>
+					</div>
+				</div>
+
+				<div class="card">
 					<div class="lab" id="stfFormTitle">Add a staff member</div>
 					<div class="form">
 						<div class="field">
@@ -671,16 +688,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=11"></script>
-		<script src="js/data.js?v=11"></script>
-		<script src="js/github.js?v=11"></script>
-		<script src="js/timer.js?v=11"></script>
-		<script src="js/chart.js?v=11"></script>
-		<script src="js/hydration.js?v=11"></script>
-		<script src="js/work.js?v=11"></script>
-		<script src="js/clock.js?v=11"></script>
-		<script src="js/staff.js?v=11"></script>
-		<script src="js/settings.js?v=11"></script>
-		<script src="js/app.js?v=11"></script>
+		<script src="js/util.js?v=13"></script>
+		<script src="js/data.js?v=13"></script>
+		<script src="js/github.js?v=13"></script>
+		<script src="js/timer.js?v=13"></script>
+		<script src="js/chart.js?v=13"></script>
+		<script src="js/hydration.js?v=13"></script>
+		<script src="js/work.js?v=13"></script>
+		<script src="js/clock.js?v=13"></script>
+		<script src="js/staff.js?v=13"></script>
+		<script src="js/settings.js?v=13"></script>
+		<script src="js/app.js?v=13"></script>
 	</body>
 </html>

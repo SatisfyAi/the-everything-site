@@ -1508,3 +1508,13 @@ body[data-v='today'] {
 		overscroll-behavior-y: none;
 	}
 }
+
+.sharebox svg {
+	display: block;
+	width: 100%;
+	max-width: 520px;
+	height: auto;
+	margin: 12px auto 0;
+	border-radius: 14px;
+	border: 1px solid var(--line);
+}

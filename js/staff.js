@@ -201,8 +201,191 @@ function renderStaffList() {
 		.join('');
 }
 
+/* ---------- Share image: one month of milestones ---------- */
+// A picture for the team leads (calendar on top, the people under each date).
+// It is an SVG shown in the page; "Download image" turns it into a PNG with
+// the same exporter the pie charts use.
+const STF_FONT = "-apple-system, 'Segoe UI', system-ui, Roboto, sans-serif";
+const STF_SHARE_COL = { half: '#f0c808', year: '#8b7dff' };
+
+function stfShareMonths() {
+	const now = new Date();
+	return [0, 1, 2].map((i) => {
+		const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+		return {
+			i,
+			d,
+			label: d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+		};
+	});
+}
+
+function stfShareSvg(offset) {
+	const now = new Date();
+	const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+	const y = first.getFullYear();
+	const mo = first.getMonth();
+	const days = new Date(y, mo + 1, 0).getDate();
+	const ms = milestonesBetween(ymd(first), ymd(new Date(y, mo, days)));
+	const byDate = {};
+	ms.forEach((m) => (byDate[m.date] = byDate[m.date] || []).push(m));
+	const dates = Object.keys(byDate).sort();
+	const people = new Set(ms.map((m) => m.person.id)).size;
+
+	const W = 720;
+	const P = 36;
+	const ctx = _chartMeasureCtx;
+	const measure = (txt, font) => {
+		ctx.font = font;
+		return ctx.measureText(txt).width;
+	};
+	const fit = (txt, font, max) => {
+		if (measure(txt, font) <= max) return txt;
+		while (txt.length > 1 && measure(txt + '…', font) > max)
+			txt = txt.slice(0, -1);
+		return txt.trimEnd() + '…';
+	};
+	let o = '';
+	const t = (x, yy, txt, size, weight, fill, extra) =>
+		(o += `<text x="${x}" y="${yy}" font-size="${size}" font-weight="${weight}" fill="${fill}" ${extra || ''}>${esc(txt)}</text>`);
+
+	// header
+	t(P, 58, 'STAFF MILESTONES', 13, 600, '#8c95a5', 'letter-spacing="2"');
+	t(
+		P,
+		102,
+		first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }),
+		36,
+		700,
+		'#eceff4',
+	);
+	t(
+		P,
+		130,
+		ms.length
+			? `${ms.length} milestone${ms.length === 1 ? '' : 's'} · ${people} ${people === 1 ? 'person' : 'people'}`
+			: 'No milestones this month',
+		16,
+		400,
+		'#8c95a5',
+	);
+
+	// calendar
+	const cw = (W - 2 * P) / 7;
+	const ch = 46;
+	let yy = 176;
+	['M', 'T', 'W', 'T', 'F', 'S', 'S'].forEach((d, i) =>
+		t(P + cw * i + cw / 2, yy, d, 12, 600, '#8c95a5', 'text-anchor="middle"'),
+	);
+	yy += 14;
+	const lead = (first.getDay() + 6) % 7;
+	const rows = Math.ceil((lead + days) / 7);
+	for (let d = 1; d <= days; d++) {
+		const idx = lead + d - 1;
+		const cx = P + cw * (idx % 7) + cw / 2;
+		const cy = yy + Math.floor(idx / 7) * ch + ch / 2;
+		const key = `${y}-${pad(mo + 1)}-${pad(d)}`;
+		const g = byDate[key];
+		if (g) {
+			const col = g.some((m) => m.months !== 6)
+				? STF_SHARE_COL.year
+				: STF_SHARE_COL.half;
+			o += `<circle cx="${cx}" cy="${cy}" r="17" fill="${col}"/>`;
+			t(cx, cy + 5.5, d, 16, 700, '#10131a', 'text-anchor="middle"');
+		} else
+			t(
+				cx,
+				cy + 5.5,
+				d,
+				16,
+				400,
+				idx % 7 > 4 ? '#5d6675' : '#b6bdca',
+				'text-anchor="middle"',
+			);
+	}
+	yy += rows * ch + 14;
+
+	// legend
+	const lf = `400 14px ${STF_FONT}`;
+	o += `<circle cx="${P + 6}" cy="${yy}" r="6" fill="${STF_SHARE_COL.half}"/>`;
+	t(P + 20, yy + 5, '6 Month milestone', 14, 400, '#8c95a5');
+	const lx = P + 20 + measure('6 Month milestone', lf) + 28;
+	o += `<circle cx="${lx + 6}" cy="${yy}" r="6" fill="${STF_SHARE_COL.year}"/>`;
+	t(lx + 20, yy + 5, 'Annual milestone', 14, 400, '#8c95a5');
+	yy += 30;
+
+	// list
+	dates.forEach((k) => {
+		const items = byDate[k];
+		const gh = Math.max(items.length * 34, 48) + 26;
+		o += `<line x1="${P}" x2="${W - P}" y1="${yy}" y2="${yy}" stroke="#262d39" stroke-width="1"/>`;
+		const dd = dateOf(k);
+		t(P, yy + 44, dd.getDate(), 32, 700, '#eceff4');
+		t(
+			P + 52,
+			yy + 36,
+			dd.toLocaleDateString('en-GB', { weekday: 'long' }),
+			14,
+			600,
+			'#b6bdca',
+		);
+		t(
+			P + 52,
+			yy + 54,
+			dd.toLocaleDateString('en-GB', { month: 'long' }),
+			13,
+			400,
+			'#8c95a5',
+		);
+		items.forEach((m, i) => {
+			const ry = yy + 40 + i * 34;
+			const lab = milestoneLabel(m.months);
+			const col = m.months === 6 ? STF_SHARE_COL.half : STF_SHARE_COL.year;
+			const pf = `600 14px ${STF_FONT}`;
+			const pw = measure(lab, pf) + 24;
+			const px = W - P - pw;
+			o += `<rect x="${px}" y="${ry - 19}" width="${pw}" height="28" rx="14" fill="${col}" fill-opacity="0.18"/>`;
+			t(px + pw / 2, ry, lab, 14, 600, col, 'text-anchor="middle"');
+			const nx = P + 150;
+			t(
+				nx,
+				ry,
+				fit(m.person.name, `600 19px ${STF_FONT}`, px - 14 - nx),
+				19,
+				600,
+				'#eceff4',
+			);
+		});
+		yy += gh;
+	});
+	const H = yy + 28;
+	const head = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${Math.ceil(H)}" viewBox="0 0 ${W} ${Math.ceil(H)}" font-family="${STF_FONT.replace(/"/g, "'")}"><rect width="${W}" height="${Math.ceil(H)}" fill="#10131a"/>`;
+	return { svg: head + o + '</svg>', first, count: ms.length };
+}
+
+let stfShareOffset = 1; // next month by default
+
+function renderShare() {
+	const sel = $('#stfShareMonth');
+	if (!sel) return;
+	const months = stfShareMonths();
+	const sig = months.map((m) => m.label).join('|');
+	if (sel.dataset.sig !== sig) {
+		sel.dataset.sig = sig;
+		sel.innerHTML = months
+			.map(
+				(m) =>
+					`<option value="${m.i}">${m.i === 0 ? 'This month' : m.i === 1 ? 'Next month' : 'In 2 months'} · ${esc(m.label)}</option>`,
+			)
+			.join('');
+	}
+	sel.value = String(stfShareOffset);
+	$('#stfShareBox').innerHTML = stfShareSvg(stfShareOffset).svg;
+}
+
 function renderStaff() {
 	renderUpcoming();
+	renderShare();
 	renderStaffList();
 }
 
@@ -325,6 +508,17 @@ function importList() {
 }
 
 function staffInit() {
+	$('#stfShareMonth').addEventListener('change', (e) => {
+		stfShareOffset = Number(e.target.value) || 0;
+		renderShare();
+	});
+	$('#stfShareDl').addEventListener('click', () => {
+		const { first } = stfShareSvg(stfShareOffset);
+		exportRingAsPng(
+			$('#stfShareBox'),
+			`milestones-${first.getFullYear()}-${pad(first.getMonth() + 1)}.png`,
+		);
+	});
 	$('#stfRange').addEventListener('change', (e) => {
 		stfRange = e.target.value;
 		renderUpcoming();

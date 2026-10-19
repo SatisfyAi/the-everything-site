@@ -243,8 +243,8 @@ function drawRingChart(
 }
 
 // Rasterizes the live <svg> inside `box` onto an offscreen canvas at 2x for a
-// crisp save, then hands the PNG to the Web Share API so it saves straight to
-// Photos on iOS. Falls back to a plain download on desktop. Nothing here ever
+// crisp save. On touch devices the PNG goes to the Web Share API (saves straight
+// to Photos on iOS); on desktop it is a plain file download. Nothing here ever
 // navigates, so a Home Screen web app's scope handling can't interfere.
 async function exportRingAsPng(box, filename) {
 	const svg = box.querySelector('svg');
@@ -284,7 +284,15 @@ async function exportRingAsPng(box, filename) {
 		);
 		const file = new File([blob], filename, { type: 'image/png' });
 
-		if (navigator.canShare && navigator.canShare({ files: [file] })) {
+		// Phones and tablets (touch as the main input) get the share sheet so the
+		// image can go straight to Photos; desktops get a normal file download.
+		const touchDevice =
+			window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+		if (
+			touchDevice &&
+			navigator.canShare &&
+			navigator.canShare({ files: [file] })
+		) {
 			try {
 				await navigator.share({ files: [file] });
 			} catch (err) {
@@ -327,9 +335,9 @@ function weekTitle(monday) {
 		monday.getMonth() === last.getMonth() &&
 		monday.getFullYear() === last.getFullYear()
 	) {
-		return `${monday.getDate()} - ${last.getDate()} ${loc(last, { month: 'long' })} ${last.getFullYear()}`;
+		return `${monday.getDate()} – ${last.getDate()} ${loc(last, { month: 'long' })} ${last.getFullYear()}`;
 	}
-	return `${loc(monday, { day: 'numeric', month: 'short' })} - ${loc(last, { day: 'numeric', month: 'short' })} ${last.getFullYear()}`;
+	return `${loc(monday, { day: 'numeric', month: 'short' })} – ${loc(last, { day: 'numeric', month: 'short' })} ${last.getFullYear()}`;
 }
 
 // Time slots for a range. `off` counts periods back from now (0 = current).
