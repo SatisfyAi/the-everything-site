@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=16" />
+		<link rel="stylesheet" href="style.css?v=17" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -345,13 +345,14 @@
 				</div>
 				<div class="card" id="chart-clock"></div>
 				<div class="card" id="offCard">
-					<div class="lab">Time off · vacation and doctor</div>
+					<div class="lab">Time off · vacation, doctor and sick days</div>
 					<div class="form">
 						<div class="field">
 							<label for="offType">Type</label>
 							<select id="offType">
 								<option value="vacation">Vacation</option>
 								<option value="doctor">Doctor appointment</option>
+								<option value="sick">Sick day</option>
 							</select>
 						</div>
 						<div class="field">
@@ -363,14 +364,14 @@
 							><input id="offTo" type="date" />
 						</div>
 						<div class="field" id="offDurF">
-							<label for="offDur">Time away (hours)</label
+							<label for="offDur">Hours off (empty = whole day)</label
 							><input
 								id="offDur"
 								type="number"
 								inputmode="decimal"
 								step="0.25"
 								min="0.25"
-								placeholder="e.g. 1.5"
+								placeholder="whole day"
 							/>
 						</div>
 					</div>
@@ -383,10 +384,11 @@
 					</div>
 					<div class="note" id="offMsg" role="status"></div>
 					<p class="muted small" style="margin: 12px 0 0">
-						A whole vacation day means no hours are expected. For half a day (or
-						a doctor appointment) enter the hours you're away: that day's target
-						is lowered by that much. Days with no data at all (weekends, public
-						holidays, gaps) are ignored and never count as missing hours.
+						Vacation, doctor and sick days all work the same way. Leave "hours
+						off" empty for a whole day (no hours expected), or enter the hours
+						you're away: that day's target is lowered by that much. Days with no
+						data at all (weekends, public holidays, gaps) are ignored and never
+						count as missing hours.
 					</p>
 					<div class="lab" style="margin: 18px 0 8px">Upcoming and recent</div>
 					<div id="offList"></div>
@@ -676,16 +678,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=16"></script>
-		<script src="js/data.js?v=16"></script>
-		<script src="js/github.js?v=16"></script>
-		<script src="js/timer.js?v=16"></script>
-		<script src="js/chart.js?v=16"></script>
-		<script src="js/hydration.js?v=16"></script>
-		<script src="js/work.js?v=16"></script>
-		<script src="js/clock.js?v=16"></script>
-		<script src="js/staff.js?v=16"></script>
-		<script src="js/settings.js?v=16"></script>
-		<script src="js/app.js?v=16"></script>
+		<script src="js/util.js?v=17"></script>
+		<script src="js/data.js?v=17"></script>
+		<script src="js/github.js?v=17"></script>
+		<script src="js/timer.js?v=17"></script>
+		<script src="js/chart.js?v=17"></script>
+		<script src="js/hydration.js?v=17"></script>
+		<script src="js/work.js?v=17"></script>
+		<script src="js/clock.js?v=17"></script>
+		<script src="js/staff.js?v=17"></script>
+		<script src="js/settings.js?v=17"></script>
+		<script src="js/app.js?v=17"></script>
 	</body>
 </html>

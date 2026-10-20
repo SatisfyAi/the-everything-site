@@ -130,7 +130,7 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 /* ---------- Today ---------- */
-// Job clock bar: worked (grey), doctor/vacation, and against the daily target
+// Job clock bar: worked (grey), doctor/vacation/sick, and against the daily target
 // the missing part (red, only once the day is finished) or the extra (green).
 function clkBar(day, w) {
 	const target = Number(clkSettings().dayTarget) || 0;
@@ -145,12 +145,10 @@ function clkBar(day, w) {
 		const extra = Math.min(work, sum - target);
 		html +=
 			seg(work - extra, '--hours') +
-			(o ? seg(off, o.type === 'doctor' ? '--doctor' : '--vacation') : '') +
+			(o ? seg(off, '--' + offKey(o)) : '') +
 			seg(extra, '--pos');
 	} else {
-		html +=
-			seg(work, '--hours') +
-			(o ? seg(off, o.type === 'doctor' ? '--doctor' : '--vacation') : '');
+		html += seg(work, '--hours') + (o ? seg(off, '--' + offKey(o)) : '');
 		if (day.e && target > sum) html += seg(target - sum, '--neg');
 	}
 	return html;
