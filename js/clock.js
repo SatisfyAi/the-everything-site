@@ -4,9 +4,9 @@
 //     days:     { "YYYY-MM-DD": { s, ls, le, e } } }     // "HH:MM" strings
 //
 // A day can also be marked as time off:  days[date].off = { type, min? }
-//   vacation            - whole day off (no hours expected), or with { min }
-//                         a part of a day
-//   doctor              - { min }: that many minutes are taken off the target
+//   type is vacation, doctor or sick (all three work the same way):
+//   no min = the whole day off (no hours expected); with min = that many
+//   minutes are taken off the target.
 // Days with no data at all are simply ignored (weekends, gaps): they never
 // count as missing hours.
 //
@@ -30,9 +30,13 @@ const OFF_TYPES = {
 	vacation: 'Vacation',
 	holiday: 'Public holiday',
 	doctor: 'Doctor',
+	sick: 'Sick day',
 };
+// Which chart series / colour a type uses (a legacy holiday counts as vacation).
+const offKey = (o) =>
+	o.type === 'doctor' || o.type === 'sick' ? o.type : 'vacation';
 const dayOff = (d) => (d && d.off && OFF_TYPES[d.off.type] ? d.off : null);
-const isFullOff = (o) => !!o && o.type !== 'doctor' && !(Number(o.min) > 0);
+const isFullOff = (o) => !!o && !(Number(o.min) > 0);
 const offLabel = (o) =>
 	Number(o.min) > 0
 		? `${OFF_TYPES[o.type]} ${formatMinutesAsHM(Number(o.min))}`
@@ -231,7 +235,7 @@ function renderClockTable() {
 		`<tfoot><tr><th colspan="5">Week total</th><td class="num">${formatMinutesAsHM(sum)}</td><td class="num ${counted ? (bal >= 0 ? 'pos' : 'neg') : ''}">${counted ? formatSignedMinutes(bal) : '–'}</td></tr></tfoot>`;
 }
 
-/* ---------- time off (vacation, holidays, doctor) ---------- */
+/* ---------- time off (vacation, doctor, sick day) ---------- */
 function offDates(from, to, skipWeekends) {
 	const out = [];
 	let d = new Date(from + 'T00:00');
@@ -253,19 +257,19 @@ function offMsg(text, isError) {
 function addOff() {
 	const type = $('#offType').value;
 	const from = $('#offFrom').value;
-	const to = type === 'doctor' ? '' : $('#offTo').value;
+	const to = $('#offTo').value;
 	const hours = $('#offDur').value;
 	if (!from) return offMsg('Pick a date.', true);
 	if (to && to < from)
 		return offMsg('The end date is before the start date.', true);
 	const off = { type };
-	if (type === 'doctor' || hours !== '') {
+	if (hours !== '') {
 		const min = Math.round(Number(hours) * 60);
 		if (!(min > 0 && min <= 1440))
 			return offMsg('Enter how many hours you are away, e.g. 1.5.', true);
 		off.min = min;
 	}
-	const dates = offDates(from, to, type !== 'doctor' && $('#offWk').checked);
+	const dates = offDates(from, to, $('#offWk').checked);
 	if (!dates.length) return offMsg('Those dates are all weekend days.', true);
 	Store.commit(
 		'clock',
@@ -361,18 +365,21 @@ function dayOffMinutes(r) {
 
 // Totals for a list of buckets. Days with no data are ignored.
 function clkAgg(list) {
-	const a = { sum: 0, days: 0, bal: 0, doctor: 0, vacation: 0 };
+	const a = { sum: 0, days: 0, bal: 0, doctor: 0, vacation: 0, sick: 0 };
 	list.forEach((b) => {
 		for (let d = new Date(b.s); d.getTime() < b.e; d = addD(d, 1)) {
 			const r = clkDay(ymd(d));
-			const w = dayWorked(r);
+			let w = dayWorked(r);
+			// today, not finished yet: counts as it stands, but not towards the balance
+			const live = !w && r && r.s && !r.e && ymd(d) === ymd(new Date());
+			if (live) w = liveWorked(r);
 			if (w) {
 				a.sum += w;
 				a.days++;
-				a.bal += w - dayTarget(r);
+				if (!live) a.bal += w - dayTarget(r);
 			}
 			const o = dayOff(r);
-			if (o) a[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
+			if (o) a[offKey(o)] += dayOffMinutes(r);
 		}
 	});
 	return a;
@@ -386,7 +393,7 @@ const clkWeekView = () =>
 		['week', 'month'].includes(charts.clock.st.range)
 	);
 
-// Bars are time worked (grey) with doctor and vacation hours stacked on top.
+// Bars are time worked (grey) with doctor, vacation and sick hours stacked on top.
 // Only the week and month views compare each finished day with its target: the gap up
 // to the target in red, anything above it in green (same colours as "Vs
 // target" in the week log). Year and all time just show the hours, because
@@ -403,6 +410,7 @@ const clockChartCfg = {
 				n: 'Vacation',
 				color: cssVar('--vacation') || '#7b6cff',
 			},
+			{ k: 'sick', n: 'Sick', color: cssVar('--sick') || '#ff9f1c' },
 		];
 		return clkWeekView()
 			? base.concat([
@@ -418,18 +426,27 @@ const clockChartCfg = {
 	data: (bs) => {
 		const week = clkWeekView();
 		return bs.map((b) => {
-			const v = { worked: 0, doctor: 0, vacation: 0, missing: 0, extra: 0 };
+			const v = {
+				worked: 0,
+				doctor: 0,
+				vacation: 0,
+				sick: 0,
+				missing: 0,
+				extra: 0,
+			};
 			for (let d = new Date(b.s); d.getTime() < b.e; d = addD(d, 1)) {
 				const r = clkDay(ymd(d));
 				const o = dayOff(r);
-				if (o)
-					v[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
-				const w = dayWorked(r);
+				if (o) v[offKey(o)] += dayOffMinutes(r);
+				let w = dayWorked(r);
+				// today, not finished yet: count the time so far (no "missing" part yet)
+				const live = !w && r && r.s && !r.e && ymd(d) === ymd(new Date());
+				if (live) w = liveWorked(r);
 				if (!w) continue;
 				if (week) {
 					const t = dayTarget(r);
 					v.worked += Math.min(w, t);
-					v.missing += Math.max(0, t - w);
+					if (!live) v.missing += Math.max(0, t - w);
 					v.extra += Math.max(0, w - t);
 				} else v.worked += w;
 			}
@@ -458,6 +475,7 @@ const clockChartCfg = {
 		}
 		if (a.doctor) o.push(['Doctor', formatMinutesAsHM(a.doctor)]);
 		if (a.vacation) o.push(['Vacation', formatMinutesAsHM(a.vacation)]);
+		if (a.sick) o.push(['Sick', formatMinutesAsHM(a.sick)]);
 		return o;
 	},
 };
@@ -467,17 +485,6 @@ function clockInit() {
 	chartInit('clock', clockChartCfg);
 	$('#clkUndo').addEventListener('click', undoStamp);
 	$('#offFrom').value = ymd(new Date());
-	const syncOffForm = () => {
-		const doc = $('#offType').value === 'doctor';
-		$('#offToF').hidden = doc;
-		$('#offWkF').hidden = doc;
-		$('#offDurF label').textContent = doc
-			? 'Time away (hours)'
-			: 'Hours off (empty = whole day)';
-		$('#offDur').placeholder = doc ? 'e.g. 1.5' : 'whole day';
-	};
-	$('#offType').addEventListener('change', syncOffForm);
-	syncOffForm();
 	$('#offAdd').addEventListener('click', addOff);
 	$('#offList').addEventListener('click', (e) => {
 		const b = e.target.closest('[data-offdel]');

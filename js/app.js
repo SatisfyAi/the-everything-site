@@ -130,7 +130,7 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 /* ---------- Today ---------- */
-// Job clock bar: worked (grey), doctor/vacation, and against the daily target
+// Job clock bar: worked (grey), doctor/vacation/sick, and against the daily target
 // the missing part (red, only once the day is finished) or the extra (green).
 function clkBar(day, w) {
 	const target = Number(clkSettings().dayTarget) || 0;
@@ -145,12 +145,10 @@ function clkBar(day, w) {
 		const extra = Math.min(work, sum - target);
 		html +=
 			seg(work - extra, '--hours') +
-			(o ? seg(off, o.type === 'doctor' ? '--doctor' : '--vacation') : '') +
+			(o ? seg(off, '--' + offKey(o)) : '') +
 			seg(extra, '--pos');
 	} else {
-		html +=
-			seg(work, '--hours') +
-			(o ? seg(off, o.type === 'doctor' ? '--doctor' : '--vacation') : '');
+		html += seg(work, '--hours') + (o ? seg(off, '--' + offKey(o)) : '');
 		if (day.e && target > sum) html += seg(target - sum, '--neg');
 	}
 	return html;
@@ -180,18 +178,22 @@ function renderToday() {
 		`<span class="p-title">Hydration</span>` +
 		`<div class="p-big">${formatMl(total)}</div><div class="muted">of ${formatMl(goal)}</div><div class="seg">${seg}</div>`;
 
+	renderHubWork();
+	renderHubClock();
+}
+
+function renderHubWork() {
 	// Discord time
 	const ts = timerGetState();
 	const t0 = sod(new Date()).getTime();
 	const t1 = addD(sod(new Date()), 1).getTime();
 	// minutes per category today (plus the running timer) -> a full bar
 	const wby = {};
-	S.work.sessions.forEach((x) => {
+	const live = workLiveSession();
+	(live ? S.work.sessions.concat(live) : S.work.sessions).forEach((x) => {
 		const m = sessionMinutesIn(x, t0, t1);
 		if (m > 0) wby[x.category] = (wby[x.category] || 0) + m;
 	});
-	if (ts)
-		wby[ts.category] = (wby[ts.category] || 0) + timerElapsedSeconds(ts) / 60;
 	const wtot = Object.values(wby).reduce((a, b) => a + b, 0);
 	const wseg = workCats()
 		.filter((c) => wby[c.key] > 0)
@@ -212,7 +214,9 @@ function renderToday() {
 	}
 	body += `<div class="seg">${wseg}</div>`;
 	$('#hubWork').innerHTML = `<span class="p-title">Discord</span>` + body;
+}
 
+function renderHubClock() {
 	// job clock
 	const day = clkDay(ymd(new Date())) || {};
 	const nx = nextStep(day);
@@ -223,7 +227,7 @@ function renderToday() {
 		`<div class="p-big">${w != null ? formatMinutesAsHM(w) : '0h'}</div>` +
 		(off
 			? `<div class="muted">${esc(offLabel(off))}${isFullOff(off) ? ' · day off' : ''}</div>`
-			: `<div class="muted">${day.e ? 'worked' : nx ? 'of 8h' : 'done'}</div>`) +
+			: `<div class="muted">${day.e ? 'worked' : nx ? 'so far' : 'done'}</div>`) +
 		`<div class="seg">${clkBar(day, w)}</div>`;
 }
 
@@ -240,8 +244,19 @@ function renderAll(forceSettings) {
 }
 
 // Once a second: running timer, live clock, midnight rollover.
+// Bars and charts that include "now" are redrawn every few seconds.
+let tickN = 0;
 function tick() {
 	const ts = timerGetState();
+	tickN++;
+	if (ts && ts.running && tickN % 5 === 0) {
+		renderHubWork();
+		if (cur === 'discord') chartDraw('work');
+	}
+	if (tickN % 15 === 0) {
+		renderHubClock();
+		if (cur === 'clock') chartDraw('clock');
+	}
 	if (ts) {
 		const t = formatHMS(timerElapsedSeconds(ts));
 		const a = $('#timerDisp');
