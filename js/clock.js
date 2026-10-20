@@ -365,11 +365,14 @@ function clkAgg(list) {
 	list.forEach((b) => {
 		for (let d = new Date(b.s); d.getTime() < b.e; d = addD(d, 1)) {
 			const r = clkDay(ymd(d));
-			const w = dayWorked(r);
+			let w = dayWorked(r);
+			// today, not finished yet: counts as it stands, but not towards the balance
+			const live = !w && r && r.s && !r.e && ymd(d) === ymd(new Date());
+			if (live) w = liveWorked(r);
 			if (w) {
 				a.sum += w;
 				a.days++;
-				a.bal += w - dayTarget(r);
+				if (!live) a.bal += w - dayTarget(r);
 			}
 			const o = dayOff(r);
 			if (o) a[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
@@ -424,12 +427,15 @@ const clockChartCfg = {
 				const o = dayOff(r);
 				if (o)
 					v[o.type === 'doctor' ? 'doctor' : 'vacation'] += dayOffMinutes(r);
-				const w = dayWorked(r);
+				let w = dayWorked(r);
+				// today, not finished yet: count the time so far (no "missing" part yet)
+				const live = !w && r && r.s && !r.e && ymd(d) === ymd(new Date());
+				if (live) w = liveWorked(r);
 				if (!w) continue;
 				if (week) {
 					const t = dayTarget(r);
 					v.worked += Math.min(w, t);
-					v.missing += Math.max(0, t - w);
+					if (!live) v.missing += Math.max(0, t - w);
 					v.extra += Math.max(0, w - t);
 				} else v.worked += w;
 			}
