@@ -11,9 +11,11 @@
 	--muted: #8c95a5;
 	--accent: #f0c808;
 	--on: #14110a;
-	--water: #4fc3f7;
-	--discord: #7b6cff;
-	--clock: #f0c808;
+	--water: #4fb0c3;
+	--discord: #8f62f3;
+	--clock: #ea8732;
+	--staff: #e6544c;
+	--today: #cebead;
 	--hours: #8b94a5;
 	--doctor: #4fc3f7;
 	--vacation: #8b7dff;
@@ -37,9 +39,11 @@
 	--muted: #6b7280;
 	--accent: #1b1d22;
 	--on: #ffffff;
-	--water: #0288d1;
-	--discord: #5b4de0;
-	--clock: #c79a00;
+	--water: #4fb0c3;
+	--discord: #8f62f3;
+	--clock: #ea8732;
+	--staff: #e6544c;
+	--today: #cebead;
 	--hours: #9aa1ad;
 	--doctor: #0288d1;
 	--vacation: #5b4de0;
@@ -62,9 +66,11 @@
 		--muted: #6b7280;
 		--accent: #1b1d22;
 		--on: #ffffff;
-		--water: #0288d1;
-		--discord: #5b4de0;
-		--clock: #c79a00;
+		--water: #4fb0c3;
+		--discord: #8f62f3;
+		--clock: #ea8732;
+		--staff: #e6544c;
+		--today: #cebead;
 		--hours: #9aa1ad;
 		--doctor: #0288d1;
 		--vacation: #5b4de0;
@@ -193,6 +199,12 @@ code {
 }
 .n-clock.on svg {
 	color: var(--clock);
+}
+.n-staff.on svg {
+	color: var(--staff);
+}
+.n-today.on svg {
+	color: var(--today);
 }
 .status {
 	margin-left: auto;
