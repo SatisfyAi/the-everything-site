@@ -1,6 +1,10 @@
 // ===================== Staff & milestones =====================
 // Data: S.stf = staff-data.json
-//   { staff: [ { id, name, joined: "YYYY-MM-DD", left?: "YYYY-MM-DD" } ] }
+//   { staff: [ { id, name, joined: "YYYY-MM-DD", left?: "YYYY-MM-DD",
+//                discord?, reddit?, discordId? } ] }
+// discord / reddit are usernames (no @ or u/ needed, stored as typed minus any
+// leading "@" / "u/"); discordId is the numeric Discord user ID. The monthly
+// report generator reads these from staff-data.json.
 //
 // Milestones fall on the join date + 6 months, then every full year (1, 2,
 // 3 ... years). Nobody gets a milestone after their leave date.
@@ -62,6 +66,25 @@ function milestonesBetween(from, to) {
 
 function nextMilestone(p, from) {
 	return personMilestones(p, from, '9999-12-31').slice(0, 1)[0] || null;
+}
+
+// Usernames are stored without the "@" / "u/" prefix, so the generator and the
+// list can add whatever each platform needs.
+const cleanDiscord = (s) => (s || '').trim().replace(/^@+/, '');
+const cleanReddit = (s) =>
+	(s || '')
+		.trim()
+		.replace(/^\/?u\//i, '')
+		.replace(/^@+/, '');
+const cleanDiscordId = (s) => (s || '').trim();
+const isDiscordId = (s) => /^\d{15,22}$/.test(s);
+
+// Adds the optional account fields to a person object (only when filled in).
+function withAccounts(person, discord, reddit, discordId) {
+	if (discord) person.discord = discord;
+	if (reddit) person.reddit = reddit;
+	if (discordId) person.discordId = discordId;
+	return person;
 }
 
 const isCurrent = (p, today) => !p.left || p.left >= today;
@@ -128,7 +151,13 @@ function renderStaffList() {
 	const today = ymd(new Date());
 	const q = stfQuery.trim().toLowerCase();
 	let list = S.stf.staff.filter((p) => {
-		if (q && !p.name.toLowerCase().includes(q)) return false;
+		if (
+			q &&
+			![p.name, p.discord, p.reddit, p.discordId].some((v) =>
+				(v || '').toLowerCase().includes(q),
+			)
+		)
+			return false;
 		if (stfFilter === 'current') return isCurrent(p, today);
 		if (stfFilter === 'former') return !isCurrent(p, today);
 		return true;
@@ -159,7 +188,13 @@ function renderStaffList() {
 				`Joined ${longDate(p.joined)}` +
 				(p.left ? ` · Left ${longDate(p.left)}` : '') +
 				(cur && isDateKey(p.joined) ? ` · ${tenure(p.joined, today)} in` : '');
-			return `<div class="srow"><div class="sinfo"><b>${esc(p.name)}</b><span class="muted small">${esc(sub)}</span>${meta ? `<span class="small smeta">${esc(meta)}</span>` : ''}</div><button class="x ed" type="button" data-edit="${esc(p.id)}" aria-label="Edit ${esc(p.name)}">✎</button><button class="x del" type="button" data-del="${esc(p.id)}" aria-label="Delete ${esc(p.name)}">×</button></div>`;
+			const accounts = [
+				p.discord ? `Discord: ${p.discord}` : '',
+				p.reddit ? `Reddit: u/${p.reddit}` : '',
+			]
+				.filter(Boolean)
+				.join(' · ');
+			return `<div class="srow"><div class="sinfo"><b>${esc(p.name)}</b><span class="muted small">${esc(sub)}</span>${accounts ? `<span class="muted small">${esc(accounts)}</span>` : ''}${meta ? `<span class="small smeta">${esc(meta)}</span>` : ''}</div><button class="x ed" type="button" data-edit="${esc(p.id)}" aria-label="Edit ${esc(p.name)}">✎</button><button class="x del" type="button" data-del="${esc(p.id)}" aria-label="Delete ${esc(p.name)}">×</button></div>`;
 		})
 		.join('');
 }
@@ -363,6 +398,9 @@ function stfResetForm() {
 	$('#stfName').value = '';
 	$('#stfJoined').value = '';
 	$('#stfLeft').value = '';
+	$('#stfDiscord').value = '';
+	$('#stfReddit').value = '';
+	$('#stfDiscordId').value = '';
 	$('#stfAdd').textContent = 'Add';
 	$('#stfCancel').hidden = true;
 	$('#stfFormTitle').textContent = 'Add a staff member';
@@ -372,12 +410,18 @@ function saveStaff() {
 	const name = $('#stfName').value.trim();
 	const joined = $('#stfJoined').value;
 	const left = $('#stfLeft').value;
+	const discord = cleanDiscord($('#stfDiscord').value);
+	const reddit = cleanReddit($('#stfReddit').value);
+	const discordId = cleanDiscordId($('#stfDiscordId').value);
 	if (!name) return stfMsg('Enter a name.', true);
 	if (!isDateKey(joined)) return stfMsg('Pick the date they joined.', true);
 	if (left && left < joined)
 		return stfMsg('The leave date is before the join date.', true);
+	if (discordId && !isDiscordId(discordId))
+		return stfMsg('A Discord ID is 15-22 digits (numbers only).', true);
 	const person = { id: stfEditId || cryptoRandomId(), name, joined };
 	if (left) person.left = left;
+	withAccounts(person, discord, reddit, discordId);
 	const editing = !!stfEditId;
 	Store.commit(
 		'staff',
@@ -395,6 +439,9 @@ function startEdit(id) {
 	$('#stfName').value = p.name;
 	$('#stfJoined').value = p.joined || '';
 	$('#stfLeft').value = p.left || '';
+	$('#stfDiscord').value = p.discord || '';
+	$('#stfReddit').value = p.reddit || '';
+	$('#stfDiscordId').value = p.discordId || '';
 	$('#stfAdd').textContent = 'Save changes';
 	$('#stfCancel').hidden = false;
 	$('#stfFormTitle').textContent = 'Edit staff member';
@@ -427,7 +474,16 @@ function importList() {
 		const name = parts[0];
 		const joined = parseDateText(parts[1]);
 		const left = parseDateText(parts[2]);
-		if (!name || !joined || left === null || (left && left < joined)) {
+		const discord = cleanDiscord(parts[3]);
+		const reddit = cleanReddit(parts[4]);
+		const discordId = cleanDiscordId(parts[5]);
+		if (
+			!name ||
+			!joined ||
+			left === null ||
+			(left && left < joined) ||
+			(discordId && !isDiscordId(discordId))
+		) {
 			bad.push(i + 1);
 			return;
 		}
@@ -439,6 +495,7 @@ function importList() {
 		}
 		const p = { id: cryptoRandomId(), name, joined };
 		if (left) p.left = left;
+		withAccounts(p, discord, reddit, discordId);
 		add.push(p);
 	});
 	if (!add.length) {
