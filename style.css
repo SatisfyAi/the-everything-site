@@ -696,10 +696,18 @@ input[type='checkbox'] {
 	display: none;
 }
 .more summary::before {
-	content: '+ ';
+	content: '';
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	margin: 0 12px 2px 3px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform 0.15s ease;
 }
 .more[open] summary::before {
-	content: '– ';
+	transform: rotate(45deg);
 }
 .more[open] summary {
 	margin-bottom: 14px;
@@ -1438,14 +1446,14 @@ textarea {
 	height: 12px;
 	border-radius: 50%;
 	background: var(--card);
-	border: 2px solid var(--today);
+	border: 2px solid var(--muted);
 }
 .tline.now .tdot {
 	background: var(--clock);
 	border-color: var(--clock);
 }
 .tline.rem .tdot {
-	background: var(--today);
+	background: var(--muted);
 }
 .tdate {
 	font:
@@ -1536,4 +1544,55 @@ body[data-v='today'] {
 	margin: 12px auto 0;
 	border-radius: 14px;
 	border: 1px solid var(--line);
+}
+
+/* ---------- Today cards: glass, donut and status icon ---------- */
+.panel {
+	border-top: 1px solid var(--line);
+}
+.hubviz {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 124px;
+	margin: 8px 0 6px;
+}
+.hubviz svg {
+	height: 100%;
+	width: auto;
+	max-width: 100%;
+}
+.hubviz.status svg {
+	height: 70px;
+	width: 70px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.7;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.donutlbl {
+	font:
+		700 15px 'DM Mono',
+		ui-monospace,
+		monospace;
+	fill: var(--text);
+}
+.panel .p-big.hubstate {
+	font-size: clamp(17px, 5vw, 22px);
+	white-space: normal;
+}
+.panel .muted {
+	font-size: 13px;
+}
+.panel .p-big {
+	font-size: clamp(22px, 6.2vw, 28px);
+}
+@media (max-width: 720px) {
+	.panel {
+		padding: 12px 10px 14px;
+	}
+	.panel .p-title {
+		font-size: 11px;
+	}
 }
