@@ -148,7 +148,9 @@ function clkBar(day, w) {
 			(o ? seg(off, '--' + offKey(o)) : '') +
 			seg(extra, '--pos');
 	} else {
-		html += seg(work, '--hours') + (o ? seg(off, '--' + offKey(o)) : '');
+		html +=
+			seg(work, '--hours') +
+			(o ? seg(off, '--' + offKey(o)) : '');
 		if (day.e && target > sum) html += seg(target - sum, '--neg');
 	}
 	return html;
@@ -197,28 +199,34 @@ function renderHubWork() {
 		if (m > 0) wby[x.category] = (wby[x.category] || 0) + m;
 	});
 	// this month's split by category -> a small donut
-	const mStart = new Date(
-		new Date().getFullYear(),
-		new Date().getMonth(),
-		1,
-	).getTime();
+	const mStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
 	const mby = {};
 	(live ? S.work.sessions.concat(live) : S.work.sessions).forEach((x) => {
 		const m = sessionMinutesIn(x, mStart, t1);
 		if (m > 0) mby[x.category] = (mby[x.category] || 0) + m;
 	});
 	const mtot = Object.values(mby).reduce((a, b) => a + b, 0);
-	const R = 38;
-	const C = 2 * Math.PI * R;
-	let off = 0;
-	let ring = `<circle cx="50" cy="50" r="${R}" fill="none" stroke="var(--card2)" stroke-width="14"/>`;
-	workCats()
-		.filter((c) => mby[c.key] > 0)
-		.forEach((c) => {
-			const len = (mby[c.key] / mtot) * C;
-			ring += `<circle cx="50" cy="50" r="${R}" fill="none" stroke="${normHex(c.color)}" stroke-width="14" stroke-dasharray="${Math.max(0, len - 1).toFixed(2)} ${(C - Math.max(0, len - 1)).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 50 50)"/>`;
-			off += len;
+	const OR = 48;
+	const IR = 31;
+	const hubUid = 'hd' + (window._hubDonutUid = (window._hubDonutUid || 0) + 1) + '-';
+	let defs = '';
+	let ring = '';
+	const segs = workCats().filter((c) => mby[c.key] > 0);
+	if (!segs.length) {
+		ring = `<path fill-rule="evenodd" fill="var(--card2)" d="M50 ${50 - OR}A${OR} ${OR} 0 1 1 49.99 ${50 - OR}ZM50 ${50 - IR}A${IR} ${IR} 0 1 0 50.01 ${50 - IR}Z"/>`;
+	} else if (segs.length === 1) {
+		defs = sliceGradientDef(hubUid + '0', normHex(segs[0].color));
+		ring = `<path fill-rule="evenodd" fill="url(#${hubUid}0)" d="M50 ${50 - OR}A${OR} ${OR} 0 1 1 49.99 ${50 - OR}ZM50 ${50 - IR}A${IR} ${IR} 0 1 0 50.01 ${50 - IR}Z"/>`;
+	} else {
+		let ang = -Math.PI / 2;
+		segs.forEach((c, i) => {
+			const end = ang + (mby[c.key] / mtot) * Math.PI * 2;
+			defs += sliceGradientDef(hubUid + i, normHex(c.color));
+			ring += `<path fill="url(#${hubUid}${i})" stroke="url(#${hubUid}${i})" stroke-width="0.6" stroke-linejoin="round" d="${ringSlicePath(50, 50, IR, OR, ang, end)}"/>`;
+			ang = end;
 		});
+	}
+	ring = `<defs>${defs}</defs>` + ring;
 	const donut = `<div class="hubviz"><svg viewBox="0 0 100 100" role="img" aria-label="This month by category">${ring}<text x="50" y="54" text-anchor="middle" class="donutlbl">${formatMinutesAsHM(mtot)}</text></svg></div>`;
 	let body;
 	if (ts) {
@@ -236,14 +244,11 @@ function renderHubWork() {
 
 const HUB_ICONS = {
 	work: '<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
-	lunch:
-		'<path d="M5 9h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM16 10h1.5a2 2 0 0 1 0 4H16M8 3v2M12 3v2"/>',
+	lunch: '<path d="M5 9h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM16 10h1.5a2 2 0 0 1 0 4H16M8 3v2M12 3v2"/>',
 	idle: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
 	done: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
-	vacation:
-		'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
-	doctor:
-		'<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>',
+	vacation: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+	doctor: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>',
 	sick: '<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/>',
 };
 
@@ -280,13 +285,16 @@ function renderHubClock() {
 		label = 'Not working';
 		time = nowHM;
 	}
-	const extra = off && !isFullOff(off) ? ` · ${esc(offLabel(off))}` : '';
+	const extra =
+		off && !isFullOff(off) ? ` · ${esc(offLabel(off))}` : '';
 	$('#hubClock').innerHTML =
 		`<span class="p-title">Job clock</span>` +
 		`<div class="hubviz status" style="color:${color}"><svg viewBox="0 0 24 24" aria-hidden="true">${HUB_ICONS[icon]}</svg></div>` +
 		`<div class="p-big hubstate">${label}</div>` +
 		`<div class="muted">${time}</div>` +
-		`<div class="muted">${w != null ? formatMinutesAsHM(w) + ' worked' : '&nbsp;'}${extra}</div>`;
+		(w != null || extra
+			? `<div class="muted">${w != null ? formatMinutesAsHM(w) + ' worked' : ''}${w != null ? extra : extra.replace(/^ · /, '')}</div>`
+			: '');
 }
 
 /* ---------- render everything that is visible ---------- */
