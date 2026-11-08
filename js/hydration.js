@@ -110,7 +110,7 @@ function hydResetForm() {
 	$('#mdMl').value = '';
 	$('#mdAdd').textContent = 'Add entry';
 	$('#mdCancel').hidden = true;
-	$('#hydMoreTitle').textContent = 'Different amount or time';
+	$('#hydMoreTitle').textContent = 'Log a drink';
 	hydNowIntoForm();
 	renderPresets();
 }
@@ -128,7 +128,6 @@ function hydStartEdit(id) {
 	$('#mdAdd').textContent = 'Update entry';
 	$('#mdCancel').hidden = false;
 	$('#hydMoreTitle').textContent = 'Edit entry';
-	$('#hydMore').open = true;
 	renderPresets();
 	$('#hydMore').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -216,13 +215,6 @@ function renderWater() {
 	$('#gOf').textContent =
 		`${Math.round((total / goal) * 100)}% of ${formatMl(goal)}`;
 
-	$('#drinkChips').innerHTML = hydCats()
-		.map(
-			(c) =>
-				`<button class="drink" type="button" data-drink="${esc(c.key)}"><b><i style="background:${normHex(c.color)}"></i>${esc(c.label)}</b><small>+${tapAmount(c.key)}ml</small></button>`,
-		)
-		.join('');
-
 	const opts = hydCats().map((c) => ({ value: c.key, label: c.label }));
 	if (hydEditId) {
 		const e = S.hyd.entries.find((x) => x.id === hydEditId);
@@ -309,9 +301,7 @@ const hydChartCfg = {
 		});
 		return isFinite(m) ? m : null;
 	},
-	steps: [
-		100, 200, 400, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000,
-	],
+	steps: [100, 250, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000],
 	emptyStep: 500,
 	axis: (v) => (v >= 1000 ? `${v / 1000}L` : String(v)),
 	fmt: formatMl,
@@ -341,9 +331,6 @@ function hydInit() {
 	$('#mdAdd').addEventListener('click', saveHydForm);
 	$('#mdCancel').addEventListener('click', hydResetForm);
 	$('#mdMl').addEventListener('input', renderPresets);
-	$('#hydMore').addEventListener('toggle', () => {
-		if ($('#hydMore').open && !hydEditId) hydNowIntoForm();
-	});
 	$('#hydMonth').addEventListener('change', () => {
 		hydMonth = $('#hydMonth').value;
 		hydLimit = 30;

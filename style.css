@@ -696,10 +696,18 @@ input[type='checkbox'] {
 	display: none;
 }
 .more summary::before {
-	content: '+ ';
+	content: '';
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	margin: 0 12px 2px 3px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform 0.15s ease;
 }
 .more[open] summary::before {
-	content: '– ';
+	transform: rotate(45deg);
 }
 .more[open] summary {
 	margin-bottom: 14px;
@@ -1438,14 +1446,14 @@ textarea {
 	height: 12px;
 	border-radius: 50%;
 	background: var(--card);
-	border: 2px solid var(--today);
+	border: 2px solid var(--muted);
 }
 .tline.now .tdot {
 	background: var(--clock);
 	border-color: var(--clock);
 }
 .tline.rem .tdot {
-	background: var(--today);
+	background: var(--muted);
 }
 .tdate {
 	font:
@@ -1536,4 +1544,73 @@ body[data-v='today'] {
 	margin: 12px auto 0;
 	border-radius: 14px;
 	border: 1px solid var(--line);
+}
+
+/* ---------- Today cards: glass (tall, left), donut + status (square, right) ---------- */
+.panels {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-rows: auto auto;
+	gap: 10px;
+	max-width: 560px;
+}
+.panel {
+	border-top: 1px solid var(--line);
+	padding: 12px 12px 10px;
+	gap: 2px;
+	min-height: 0;
+	overflow: hidden;
+}
+.panel.water {
+	grid-row: 1 / span 2;
+}
+.panel.discord,
+.panel.clock {
+	aspect-ratio: 1 / 1;
+}
+.hubviz {
+	flex: 1 1 0;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 6px 0 4px;
+}
+.hubviz svg {
+	height: 100%;
+	width: 100%;
+	max-width: 100%;
+}
+.hubviz.status svg {
+	width: auto;
+	max-height: 64px;
+	aspect-ratio: 1 / 1;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.7;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.donutlbl {
+	font: 700 12px 'DM Mono', ui-monospace, monospace;
+	fill: var(--text);
+}
+.panel .p-title {
+	font-size: 11px;
+}
+.panel .p-big {
+	font-size: clamp(20px, 5.6vw, 28px);
+}
+.panel .p-big.hubstate {
+	font-size: clamp(16px, 4.6vw, 22px);
+	white-space: normal;
+}
+.panel .muted {
+	font-size: 12.5px;
+}
+
+.panel .muted {
+	line-height: 1.2;
+}
+.panel .hubviz + .p-big {
+	margin-top: 0;
 }
