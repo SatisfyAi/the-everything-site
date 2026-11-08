@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=20" />
+		<link rel="icon" type="image/png" href="hub.png?v=18" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=20" />
+		<link rel="stylesheet" href="style.css?v=24" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -149,11 +149,9 @@
 						</div>
 					</div>
 					<div class="card">
-						<div class="lab">Tap a drink to log it</div>
-						<div class="drinks" id="drinkChips"></div>
+						<div class="lab" id="hydMoreTitle">Log a drink</div>
 						<div class="note" id="hydNote" role="status"></div>
-						<details class="more" id="hydMore">
-							<summary id="hydMoreTitle">Different amount or time</summary>
+						<div id="hydMore">
 							<div class="form">
 								<div class="field">
 									<label for="mdDrink">Drink</label
@@ -187,7 +185,7 @@
 									Cancel edit
 								</button>
 							</div>
-						</details>
+						</div>
 					</div>
 				</div>
 				<div class="card" id="chart-water"></div>
@@ -384,11 +382,11 @@
 					</div>
 					<div class="note" id="offMsg" role="status"></div>
 					<p class="muted small" style="margin: 12px 0 0">
-						Vacation, doctor and sick days all work the same way. Leave "hours
-						off" empty for a whole day (no hours expected), or enter the hours
-						you're away: that day's target is lowered by that much. Days with no
-						data at all (weekends, public holidays, gaps) are ignored and never
-						count as missing hours.
+						Vacation, doctor and sick days all work the same way. Leave "hours off"
+						empty for a whole day (no hours expected), or enter the hours you're
+						away: that day's target is lowered by that much. Days with no data at all
+						(weekends, public holidays, gaps) are ignored and never count as missing
+						hours.
 					</p>
 					<div class="lab" style="margin: 18px 0 8px">Upcoming and recent</div>
 					<div id="offList"></div>
@@ -435,17 +433,11 @@
 				<div class="card">
 					<div class="chart-head">
 						<div class="lab" style="margin: 0">Upcoming milestones</div>
-						<select
-							id="stfShareMonth"
-							class="monthsel"
-							aria-label="Month"
-						></select>
+						<select id="stfShareMonth" class="monthsel" aria-label="Month"></select>
 					</div>
 					<div id="stfShareBox" class="sharebox"></div>
 					<div class="addrow">
-						<button class="btn" id="stfShareDl" type="button">
-							Download image
-						</button>
+						<button class="btn" id="stfShareDl" type="button">Download image</button>
 					</div>
 					<p class="muted small" style="margin: 12px 0 0">
 						Milestones are at 6 months, then every year on the join date. They
@@ -475,42 +467,6 @@
 							<label for="stfLeft">Left (optional)</label
 							><input id="stfLeft" type="date" />
 						</div>
-						<div class="field">
-							<label for="stfDiscord">Discord username (optional)</label
-							><input
-								id="stfDiscord"
-								type="text"
-								maxlength="40"
-								autocomplete="off"
-								autocapitalize="off"
-								spellcheck="false"
-								placeholder="e.g. satisfy.ai"
-							/>
-						</div>
-						<div class="field">
-							<label for="stfReddit">Reddit username (optional)</label
-							><input
-								id="stfReddit"
-								type="text"
-								maxlength="40"
-								autocomplete="off"
-								autocapitalize="off"
-								spellcheck="false"
-								placeholder="e.g. u/SatisfyAi"
-							/>
-						</div>
-						<div class="field">
-							<label for="stfDiscordId">Discord ID (optional)</label
-							><input
-								id="stfDiscordId"
-								type="text"
-								inputmode="numeric"
-								maxlength="20"
-								autocomplete="off"
-								spellcheck="false"
-								placeholder="used for @mentions in reports"
-							/>
-						</div>
 					</div>
 					<div class="addrow">
 						<button class="btn" id="stfAdd" type="button">Add</button>
@@ -522,17 +478,15 @@
 					<details class="more" id="stfImport">
 						<summary>Import a list</summary>
 						<p class="muted small" style="margin: 0 0 10px">
-							One person per line:
-							<code>name, joined, left, discord, reddit, discord id</code>
-							(everything after joined is optional, leave a column empty to skip
-							it). Dates like <code>2025-03-14</code> or
+							One person per line: <code>name, joined, left</code> (left is
+							optional). Dates like <code>2025-03-14</code> or
 							<code>14.03.2025</code>.
 						</p>
 						<textarea
 							id="stfBulk"
 							rows="7"
 							spellcheck="false"
-							placeholder="Alex, 14.03.2025&#10;Sam, 2024-09-01, 2025-12-31, sam.d, u/SamR"
+							placeholder="Alex, 14.03.2025&#10;Sam, 2024-09-01, 2025-12-31"
 						></textarea>
 						<div class="addrow">
 							<button class="btn sm" id="stfBulkAdd" type="button">
@@ -555,8 +509,8 @@
 						<input
 							id="stfSearch"
 							type="search"
-							placeholder="Search name or username"
-							aria-label="Search name or username"
+							placeholder="Search name"
+							aria-label="Search name"
 							style="max-width: 220px"
 						/>
 					</div>
@@ -716,16 +670,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=20"></script>
-		<script src="js/data.js?v=20"></script>
-		<script src="js/github.js?v=20"></script>
-		<script src="js/timer.js?v=20"></script>
-		<script src="js/chart.js?v=20"></script>
-		<script src="js/hydration.js?v=20"></script>
-		<script src="js/work.js?v=20"></script>
-		<script src="js/clock.js?v=20"></script>
-		<script src="js/staff.js?v=20"></script>
-		<script src="js/settings.js?v=20"></script>
-		<script src="js/app.js?v=20"></script>
+		<script src="js/util.js?v=24"></script>
+		<script src="js/data.js?v=24"></script>
+		<script src="js/github.js?v=24"></script>
+		<script src="js/timer.js?v=24"></script>
+		<script src="js/chart.js?v=24"></script>
+		<script src="js/hydration.js?v=24"></script>
+		<script src="js/work.js?v=24"></script>
+		<script src="js/clock.js?v=24"></script>
+		<script src="js/staff.js?v=24"></script>
+		<script src="js/settings.js?v=24"></script>
+		<script src="js/app.js?v=24"></script>
 	</body>
 </html>
