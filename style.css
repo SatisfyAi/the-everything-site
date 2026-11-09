@@ -1553,8 +1553,26 @@ body[data-v='today'] {
 	gap: 10px;
 	max-width: 560px;
 }
+/* ---------- Today cards: glass (tall, left), donut + status (square, right) ---------- */
+.panels {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-rows: auto auto;
+	gap: 10px;
+	max-width: 560px;
+}
 .panel {
 	border-top: 1px solid var(--line);
+	padding: 12px 12px 10px;
+	gap: 2px;
+	min-height: 0;
+	overflow: hidden;
+}
+.panel.water {
+	grid-row: 1 / span 2;
+}
+.panel.discord,
+.panel.clock {
+	aspect-ratio: 1 / 1;
 	padding: 12px 12px 10px;
 	gap: 2px;
 	min-height: 0;
@@ -1570,13 +1588,17 @@ body[data-v='today'] {
 .hubviz {
 	flex: 1 1 0;
 	min-height: 0;
+	flex: 1 1 0;
+	min-height: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	margin: 6px 0 4px;
+	margin: 6px 0 4px;
 }
 .hubviz svg {
 	height: 100%;
+	width: 100%;
 	width: 100%;
 	max-width: 100%;
 }
@@ -1601,11 +1623,19 @@ body[data-v='today'] {
 .panel .p-big {
 	font-size: clamp(20px, 5.6vw, 28px);
 }
+.panel .p-title {
+	font-size: 11px;
+}
+.panel .p-big {
+	font-size: clamp(20px, 5.6vw, 28px);
+}
 .panel .p-big.hubstate {
+	font-size: clamp(16px, 4.6vw, 22px);
 	font-size: clamp(16px, 4.6vw, 22px);
 	white-space: normal;
 }
 .panel .muted {
+	font-size: 12.5px;
 	font-size: 12.5px;
 }
 
