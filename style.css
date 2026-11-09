@@ -1551,28 +1551,9 @@ body[data-v='today'] {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	grid-template-rows: auto auto;
 	gap: 10px;
-	max-width: 560px;
-}
-/* ---------- Today cards: glass (tall, left), donut + status (square, right) ---------- */
-.panels {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	grid-template-rows: auto auto;
-	gap: 10px;
-	max-width: 560px;
 }
 .panel {
 	border-top: 1px solid var(--line);
-	padding: 12px 12px 10px;
-	gap: 2px;
-	min-height: 0;
-	overflow: hidden;
-}
-.panel.water {
-	grid-row: 1 / span 2;
-}
-.panel.discord,
-.panel.clock {
-	aspect-ratio: 1 / 1;
 	padding: 12px 12px 10px;
 	gap: 2px;
 	min-height: 0;
@@ -1588,17 +1569,13 @@ body[data-v='today'] {
 .hubviz {
 	flex: 1 1 0;
 	min-height: 0;
-	flex: 1 1 0;
-	min-height: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	margin: 6px 0 4px;
-	margin: 6px 0 4px;
 }
 .hubviz svg {
 	height: 100%;
-	width: 100%;
 	width: 100%;
 	max-width: 100%;
 }
@@ -1623,19 +1600,11 @@ body[data-v='today'] {
 .panel .p-big {
 	font-size: clamp(20px, 5.6vw, 28px);
 }
-.panel .p-title {
-	font-size: 11px;
-}
-.panel .p-big {
-	font-size: clamp(20px, 5.6vw, 28px);
-}
 .panel .p-big.hubstate {
-	font-size: clamp(16px, 4.6vw, 22px);
 	font-size: clamp(16px, 4.6vw, 22px);
 	white-space: normal;
 }
 .panel .muted {
-	font-size: 12.5px;
 	font-size: 12.5px;
 }
 
@@ -1644,4 +1613,32 @@ body[data-v='today'] {
 }
 .panel .hubviz + .p-big {
 	margin-top: 0;
+}
+
+/* Today: cards and milestones. Stacked on phones, side by side on wide screens. */
+.todaygrid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 18px;
+	align-items: start;
+}
+@media (min-width: 900px) {
+	.todaygrid {
+		grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
+		gap: 24px;
+	}
+	#stfWrap {
+		max-width: 520px;
+	}
+}
+
+/* the milestones card is a Today card too: title inside, same padding */
+#stfWrap .tl-wrap {
+	padding: 12px 14px 10px;
+	gap: 6px;
+	border-radius: var(--r);
+	box-shadow: var(--shadow);
+}
+#stfWrap .p-head {
+	margin-bottom: 4px;
 }
