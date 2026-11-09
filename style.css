@@ -1620,15 +1620,31 @@ body[data-v='today'] {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
 	gap: 18px;
-	align-items: start;
+	align-items: stretch;
+}
+.todaygrid .panels {
+	grid-template-rows: 1fr 1fr;
+}
+#stfWrap,
+#stfToday {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+#stfWrap {
+	height: 100%;
+}
+#stfToday {
+	flex: 1;
+}
+#stfToday .tl-wrap {
+	flex: 1;
 }
 @media (min-width: 900px) {
+	/* two equal halves, so the pair sits exactly in the middle of the page */
 	.todaygrid {
-		grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
-		gap: 24px;
-	}
-	#stfWrap {
-		max-width: 520px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 20px;
 	}
 }
 
