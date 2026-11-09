@@ -148,9 +148,7 @@ function clkBar(day, w) {
 			(o ? seg(off, '--' + offKey(o)) : '') +
 			seg(extra, '--pos');
 	} else {
-		html +=
-			seg(work, '--hours') +
-			(o ? seg(off, '--' + offKey(o)) : '');
+		html += seg(work, '--hours') + (o ? seg(off, '--' + offKey(o)) : '');
 		if (day.e && target > sum) html += seg(target - sum, '--neg');
 	}
 	return html;
@@ -199,7 +197,11 @@ function renderHubWork() {
 		if (m > 0) wby[x.category] = (wby[x.category] || 0) + m;
 	});
 	// this month's split by category -> a small donut
-	const mStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+	const mStart = new Date(
+		new Date().getFullYear(),
+		new Date().getMonth(),
+		1,
+	).getTime();
 	const mby = {};
 	(live ? S.work.sessions.concat(live) : S.work.sessions).forEach((x) => {
 		const m = sessionMinutesIn(x, mStart, t1);
@@ -226,8 +228,6 @@ function renderHubWork() {
 			ring += `<path fill="url(#${hubUid}${i})" stroke="url(#${hubUid}${i})" stroke-width="0.6" stroke-linejoin="round" d="${ringSlicePath(50, 50, IR, OR, ang, end)}"/>`;
 			ang = end;
 		});
-	}
-	ring = `<defs>${defs}</defs>` + ring;
 	}
 	ring = `<defs>${defs}</defs>` + ring;
 	const donut = `<div class="hubviz"><svg viewBox="0 0 100 100" role="img" aria-label="This month by category">${ring}<text x="50" y="54" text-anchor="middle" class="donutlbl">${formatMinutesAsHM(mtot)}</text></svg></div>`;
@@ -310,8 +310,7 @@ function renderHubClock() {
 		label = 'Not working';
 		time = nowHM;
 	}
-	const extra =
-		off && !isFullOff(off) ? ` · ${esc(offLabel(off))}` : '';
+	const extra = off && !isFullOff(off) ? ` · ${esc(offLabel(off))}` : '';
 	$('#hubClock').innerHTML =
 		`<span class="p-title">Job clock</span>` +
 		`<div class="hubviz status" style="color:${color}"><svg viewBox="${HUB_ICONS[icon][0]}" aria-hidden="true"><path d="${HUB_ICONS[icon][1]}"/></svg></div>` +
@@ -320,9 +319,9 @@ function renderHubClock() {
 		(w != null || extra
 			? `<div class="muted">${w != null ? formatMinutesAsHM(w) + ' worked' : ''}${w != null ? extra : extra.replace(/^ · /, '')}</div>`
 			: '');
-		(w != null || extra
-			? `<div class="muted">${w != null ? formatMinutesAsHM(w) + ' worked' : ''}${w != null ? extra : extra.replace(/^ · /, '')}</div>`
-			: '');
+	w != null || extra
+		? `<div class="muted">${w != null ? formatMinutesAsHM(w) + ' worked' : ''}${w != null ? extra : extra.replace(/^ · /, '')}</div>`
+		: '';
 }
 
 /* ---------- render everything that is visible ---------- */
