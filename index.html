@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=18" />
+		<link rel="icon" type="image/png" href="hub.png?v=28" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=24" />
+		<link rel="stylesheet" href="style.css?v=28" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -101,17 +101,15 @@
 					<div class="eyebrow">Today</div>
 					<h1 class="h-display" id="todayDate">&nbsp;</h1>
 				</div>
-				<div class="panels">
-					<article class="panel water" id="hubWater"></article>
-					<article class="panel discord" id="hubWork"></article>
-					<article class="panel clock" id="hubClock"></article>
-				</div>
-				<div id="stfWrap" hidden>
-					<div class="sec-head">
-						<h2 class="h2">Upcoming milestones</h2>
-						<span class="muted small">next 7 days</span>
+				<div class="todaygrid">
+					<div class="panels">
+						<article class="panel water" id="hubWater"></article>
+						<article class="panel discord" id="hubWork"></article>
+						<article class="panel clock" id="hubClock"></article>
 					</div>
-					<div id="stfToday" class="reminders"></div>
+					<div id="stfWrap">
+						<div id="stfToday" class="reminders"></div>
+					</div>
 				</div>
 			</section>
 
@@ -382,11 +380,11 @@
 					</div>
 					<div class="note" id="offMsg" role="status"></div>
 					<p class="muted small" style="margin: 12px 0 0">
-						Vacation, doctor and sick days all work the same way. Leave "hours off"
-						empty for a whole day (no hours expected), or enter the hours you're
-						away: that day's target is lowered by that much. Days with no data at all
-						(weekends, public holidays, gaps) are ignored and never count as missing
-						hours.
+						Vacation, doctor and sick days all work the same way. Leave "hours
+						off" empty for a whole day (no hours expected), or enter the hours
+						you're away: that day's target is lowered by that much. Days with no
+						data at all (weekends, public holidays, gaps) are ignored and never
+						count as missing hours.
 					</p>
 					<div class="lab" style="margin: 18px 0 8px">Upcoming and recent</div>
 					<div id="offList"></div>
@@ -433,11 +431,17 @@
 				<div class="card">
 					<div class="chart-head">
 						<div class="lab" style="margin: 0">Upcoming milestones</div>
-						<select id="stfShareMonth" class="monthsel" aria-label="Month"></select>
+						<select
+							id="stfShareMonth"
+							class="monthsel"
+							aria-label="Month"
+						></select>
 					</div>
 					<div id="stfShareBox" class="sharebox"></div>
 					<div class="addrow">
-						<button class="btn" id="stfShareDl" type="button">Download image</button>
+						<button class="btn" id="stfShareDl" type="button">
+							Download image
+						</button>
 					</div>
 					<p class="muted small" style="margin: 12px 0 0">
 						Milestones are at 6 months, then every year on the join date. They
@@ -670,16 +674,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=24"></script>
-		<script src="js/data.js?v=24"></script>
-		<script src="js/github.js?v=24"></script>
-		<script src="js/timer.js?v=24"></script>
-		<script src="js/chart.js?v=24"></script>
-		<script src="js/hydration.js?v=24"></script>
-		<script src="js/work.js?v=24"></script>
-		<script src="js/clock.js?v=24"></script>
-		<script src="js/staff.js?v=24"></script>
-		<script src="js/settings.js?v=24"></script>
-		<script src="js/app.js?v=24"></script>
+		<script src="js/util.js?v=28"></script>
+		<script src="js/data.js?v=28"></script>
+		<script src="js/github.js?v=28"></script>
+		<script src="js/timer.js?v=28"></script>
+		<script src="js/chart.js?v=28"></script>
+		<script src="js/hydration.js?v=28"></script>
+		<script src="js/work.js?v=28"></script>
+		<script src="js/clock.js?v=28"></script>
+		<script src="js/staff.js?v=28"></script>
+		<script src="js/settings.js?v=28"></script>
+		<script src="js/app.js?v=28"></script>
 	</body>
 </html>

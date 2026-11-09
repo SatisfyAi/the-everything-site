@@ -1551,7 +1551,6 @@ body[data-v='today'] {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	grid-template-rows: auto auto;
 	gap: 10px;
-	max-width: 560px;
 }
 .panel {
 	border-top: 1px solid var(--line);
@@ -1582,16 +1581,17 @@ body[data-v='today'] {
 }
 .hubviz.status svg {
 	width: auto;
-	max-height: 64px;
-	aspect-ratio: 1 / 1;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 1.7;
-	stroke-linecap: round;
-	stroke-linejoin: round;
+	max-height: 56px;
+	max-width: 100%;
+	height: 56px;
+	fill: currentColor;
+	stroke: none;
 }
 .donutlbl {
-	font: 700 12px 'DM Mono', ui-monospace, monospace;
+	font:
+		700 12px 'DM Mono',
+		ui-monospace,
+		monospace;
 	fill: var(--text);
 }
 .panel .p-title {
@@ -1613,4 +1613,32 @@ body[data-v='today'] {
 }
 .panel .hubviz + .p-big {
 	margin-top: 0;
+}
+
+/* Today: cards and milestones. Stacked on phones, side by side on wide screens. */
+.todaygrid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 18px;
+	align-items: start;
+}
+@media (min-width: 900px) {
+	.todaygrid {
+		grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
+		gap: 24px;
+	}
+	#stfWrap {
+		max-width: 520px;
+	}
+}
+
+/* the milestones card is a Today card too: title inside, same padding */
+#stfWrap .tl-wrap {
+	padding: 12px 14px 10px;
+	gap: 6px;
+	border-radius: var(--r);
+	box-shadow: var(--shadow);
+}
+#stfWrap .p-head {
+	margin-bottom: 4px;
 }

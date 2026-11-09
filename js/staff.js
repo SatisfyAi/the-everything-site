@@ -87,22 +87,24 @@ function tenure(from, to) {
 }
 
 /* ---------- Today: milestones under the date ---------- */
-// A timeline of the next 7 days (today included). Everything further ahead is
-// on the Staff page.
-const TODAY_WINDOW = 7;
+// A timeline of the next few dates that have a milestone (today included).
+// The full list is on the Staff page.
+const TODAY_SHOW = 5; // how many upcoming dates the Today view lists
 
 const whoHtml = (m) =>
 	`<span class="rit"><b>${esc(m.person.name)}</b> · ${milestoneLabel(m.months)}</span>`;
 
 // Milestones grouped per date for the next `days` days: [{ date, n, items }]
-function milestonesByDay(days) {
+function milestonesByDay(limit) {
 	const now = new Date();
-	const ms = milestonesBetween(ymd(now), ymd(addD(now, days)));
+	const ms = milestonesBetween(ymd(now), ymd(addD(now, 400)));
 	const out = [];
 	ms.forEach((m) => {
 		let g = out[out.length - 1];
-		if (!g || g.date !== m.date)
+		if (!g || g.date !== m.date) {
+			if (out.length >= limit) return;
 			out.push((g = { date: m.date, n: daysUntil(m.date), items: [] }));
+		}
 		g.items.push(m);
 	});
 	return out;
@@ -111,16 +113,17 @@ function milestonesByDay(days) {
 function renderStaffToday() {
 	const el = $('#stfToday');
 	if (!el) return;
-	const days = milestonesByDay(TODAY_WINDOW);
+	const days = milestonesByDay(TODAY_SHOW);
 	const html = days
 		.map(
 			(g) =>
 				`<div class="tline${g.n === 0 ? ' now' : ''}${REMIND_DAYS.includes(g.n) ? ' rem' : ''}"><i class="tdot"></i><div class="tdate">${esc(shortDate(g.date))}<span class="muted"> · ${inDays(g.n)}</span></div><div class="tnames">${g.items.map(whoHtml).join('')}</div></div>`,
 		)
 		.join('');
-	const wrap = $('#stfWrap');
-	if (wrap) wrap.hidden = !html;
-	el.innerHTML = html ? `<div class="tl-wrap">${html}</div>` : '';
+	const head = `<div class="p-head"><span class="p-title">Upcoming milestones</span><span class="muted small">${
+		days.length ? `next ${days.length} date${days.length === 1 ? '' : 's'}` : ''
+	}</span></div>`;
+	el.innerHTML = `<div class="tl-wrap panel">${head}${html || '<div class="empty">No upcoming milestones.</div>'}</div>`;
 }
 
 /* ---------- Staff page ---------- */
