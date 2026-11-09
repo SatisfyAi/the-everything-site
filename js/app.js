@@ -291,26 +291,28 @@ function renderHubClock() {
 		time = 'all day';
 	} else if (day.e) {
 		icon = 'done';
-		color = 'var(--pos)';
+		color = 'var(--done)';
 		label = 'Work done';
 		time = `ended ${day.e}`;
 	} else if (day.ls && !day.le) {
 		icon = 'lunch';
-		color = 'var(--clock)';
+		color = 'var(--lunch)';
 		label = 'Having lunch';
 		time = `since ${day.ls}`;
 	} else if (day.s) {
 		icon = 'work';
-		color = 'var(--clock)';
+		color = 'var(--working)';
 		label = 'Working';
 		time = `since ${day.s}`;
 	} else {
 		icon = 'idle';
-		color = 'var(--muted)';
+		color = 'var(--idle)';
 		label = 'Not working';
 		time = nowHM;
 	}
 	const extra = off && !isFullOff(off) ? ` · ${esc(offLabel(off))}` : '';
+	// the panel's top bar takes the colour of the current state too
+	$('#hubClock').style.setProperty('--pc', color);
 	$('#hubClock').innerHTML =
 		`<span class="p-title">Job clock</span>` +
 		`<div class="hubviz status" style="color:${color}"><svg viewBox="${HUB_ICONS[icon][0]}" aria-hidden="true"><path d="${HUB_ICONS[icon][1]}"/></svg></div>` +

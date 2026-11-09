@@ -471,6 +471,42 @@
 							<label for="stfLeft">Left (optional)</label
 							><input id="stfLeft" type="date" />
 						</div>
+						<div class="field">
+							<label for="stfDiscord">Discord username (optional)</label
+							><input
+								id="stfDiscord"
+								type="text"
+								maxlength="40"
+								autocapitalize="off"
+								autocomplete="off"
+								spellcheck="false"
+								placeholder="e.g. satisfy.ai"
+							/>
+						</div>
+						<div class="field">
+							<label for="stfReddit">Reddit username (optional)</label
+							><input
+								id="stfReddit"
+								type="text"
+								maxlength="40"
+								autocapitalize="off"
+								autocomplete="off"
+								spellcheck="false"
+								placeholder="e.g. u/SatisfyAi"
+							/>
+						</div>
+						<div class="field">
+							<label for="stfDiscordId">Discord ID (optional)</label
+							><input
+								id="stfDiscordId"
+								type="text"
+								inputmode="numeric"
+								maxlength="20"
+								autocomplete="off"
+								spellcheck="false"
+								placeholder="used for @mentions in reports"
+							/>
+						</div>
 					</div>
 					<div class="addrow">
 						<button class="btn" id="stfAdd" type="button">Add</button>
@@ -482,15 +518,17 @@
 					<details class="more" id="stfImport">
 						<summary>Import a list</summary>
 						<p class="muted small" style="margin: 0 0 10px">
-							One person per line: <code>name, joined, left</code> (left is
-							optional). Dates like <code>2025-03-14</code> or
+							One person per line:
+							<code>name, joined, left, discord, reddit, discord id</code>
+							(everything after joined is optional, leave a column empty to skip
+							it). Dates like <code>2025-03-14</code> or
 							<code>14.03.2025</code>.
 						</p>
 						<textarea
 							id="stfBulk"
 							rows="7"
 							spellcheck="false"
-							placeholder="Alex, 14.03.2025&#10;Sam, 2024-09-01, 2025-12-31"
+							placeholder="Alex, 14.03.2025&#10;Sam, 2024-09-01, 2025-12-31, sam.d, u/SamR"
 						></textarea>
 						<div class="addrow">
 							<button class="btn sm" id="stfBulkAdd" type="button">
@@ -513,8 +551,8 @@
 						<input
 							id="stfSearch"
 							type="search"
-							placeholder="Search name"
-							aria-label="Search name"
+							placeholder="Search name or username"
+							aria-label="Search name or username"
 							style="max-width: 220px"
 						/>
 					</div>
