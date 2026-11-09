@@ -20,6 +20,10 @@
 	--doctor: #4fc3f7;
 	--vacation: #8b7dff;
 	--sick: #ff9f1c;
+	--working: #ea8732;
+	--lunch: #ff6f91;
+	--done: #6fd08c;
+	--idle: #8c9bb5;
 	--pos: #6fd08c;
 	--neg: #ff7a7a;
 	--danger: #ff6b6b;
@@ -48,6 +52,10 @@
 	--doctor: #0288d1;
 	--vacation: #5b4de0;
 	--sick: #c2610c;
+	--working: #ea8732;
+	--lunch: #d6336c;
+	--done: #1f8f4a;
+	--idle: #64748b;
 	--pos: #1f8f4a;
 	--neg: #d23a3a;
 	--danger: #d23a3a;
@@ -75,6 +83,10 @@
 		--doctor: #0288d1;
 		--vacation: #5b4de0;
 		--sick: #c2610c;
+		--working: #ea8732;
+		--lunch: #d6336c;
+		--done: #1f8f4a;
+		--idle: #64748b;
 		--pos: #1f8f4a;
 		--neg: #d23a3a;
 		--danger: #d23a3a;
