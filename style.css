@@ -1639,18 +1639,13 @@ body[data-v='today'] {
 }
 #stfWrap,
 #stfToday {
-	display: flex;
-	flex-direction: column;
-	min-height: 0;
+	display: grid;
 }
-#stfWrap {
-	height: 100%;
-}
-#stfToday {
-	flex: 1;
-}
-#stfToday .tl-wrap {
-	flex: 1;
+/* the card sizes to its content; grid stretch (not height:100% or flex) makes it
+   match the left column on wide screens, so nothing depends on a percent height */
+#stfWrap .tl-wrap {
+	min-height: auto;
+	overflow: visible;
 }
 @media (min-width: 900px) {
 	/* two equal halves, so the pair sits exactly in the middle of the page */
