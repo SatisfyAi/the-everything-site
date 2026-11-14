@@ -78,9 +78,13 @@ private GitHub repo, so the same data is on every device.
 ### Staff
 
 - **List** with Current / Former / All filters, search, edit and delete. A
-  person has a name, a join date and an optional leave date.
-- **Import**: paste one person per line as `name, joined, left` (left is
-  optional). Dates can be `2025-03-14` or `14.03.2025`.
+  person has a name, a join date, an optional leave date and optional Discord
+  username, Reddit username and Discord user ID (search matches all of them;
+  the ID is 15-22 digits and is not shown in the list).
+- **Import**: one person per line as
+  `name, joined, left, discord, reddit, discord id`. Everything after the join
+  date is optional (leave a column empty to skip it). Dates can be
+  `2025-03-14` or `14.03.2025`.
 - **Milestones**: at 6 months, then every year on the join date (a date that
   does not exist that month is moved to the month end). They stop after the
   leave date. They are labelled "6 Month milestone" and "Annual milestone".
@@ -118,7 +122,7 @@ per section. The file names and repo are set in `REPO_CONFIG` at the top of
 | `data.json`           | Discord time: `{ categories: [{key, label, color}], sessions: [{id, category, startDate, endDate, minutes, note?}] }`                                                                                                                                   |
 | `hydration-data.json` | `{ categories, entries: [{id, category, date, amount}], settings: { goal, amounts } }`                                                                                                                                                                  |
 | `clock-data.json`     | `{ settings: { startShift, endShift, dayTarget }, days: { "YYYY-MM-DD": { s, ls, le, e, off?: { type, min? } } } }`. `s/ls/le/e` are the four stamps; `off.type` is `vacation`, `doctor` or `sick`; `off.min` is the minutes away (missing = whole day) |
-| `staff-data.json`     | `{ staff: [{ id, name, joined, left? }] }` with ISO dates                                                                                                                                                                                               |
+| `staff-data.json`     | `{ staff: [{ id, name, joined, left?, discord?, reddit?, discordId? }] }` with ISO dates                                                                                                                                                                |
 
 The files are created automatically the first time something is saved.
 `staff-data.json` can be read by other tools (for example a report
@@ -191,7 +195,7 @@ your repo is named differently).
 ## Notes
 
 - **Cache busting**: scripts and the stylesheet are loaded with `?v=N`
-  (currently `v=32`). After changing a file, raise the number in
+  (currently `v=33`). After changing a file, raise the number in
   `index.html` so phones do not use an old copy.
 - **Fonts**: Bricolage Grotesque, DM Mono, DM Sans and Poppins (Poppins is
   used for exported images).
