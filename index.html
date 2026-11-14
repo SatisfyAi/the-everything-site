@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=29" />
+		<link rel="icon" type="image/png" href="hub.png?v=34" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,7 +33,7 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=29" />
+		<link rel="stylesheet" href="style.css?v=34" />
 	</head>
 	<body data-v="today">
 		<header class="top">
@@ -316,19 +316,23 @@
 				<div class="card">
 					<div class="stamps" id="stamps">
 						<button class="stamp" id="st-s" data-stamp="s" type="button">
-							<span class="sl">Start</span><span class="sv">--:--</span
+							<svg class="sico" data-ico="work" aria-hidden="true"></svg
+							><span class="sl">Start</span><span class="sv">--:--</span
 							><span class="sh"></span>
 						</button>
 						<button class="stamp" id="st-ls" data-stamp="ls" type="button">
-							<span class="sl">Lunch start</span><span class="sv">--:--</span
+							<svg class="sico" data-ico="lunch" aria-hidden="true"></svg
+							><span class="sl">Lunch start</span><span class="sv">--:--</span
 							><span class="sh"></span>
 						</button>
 						<button class="stamp" id="st-le" data-stamp="le" type="button">
-							<span class="sl">Lunch end</span><span class="sv">--:--</span
+							<svg class="sico" data-ico="work" aria-hidden="true"></svg
+							><span class="sl">Lunch end</span><span class="sv">--:--</span
 							><span class="sh"></span>
 						</button>
 						<button class="stamp" id="st-e" data-stamp="e" type="button">
-							<span class="sl">End</span><span class="sv">--:--</span
+							<svg class="sico" data-ico="done" aria-hidden="true"></svg
+							><span class="sl">End</span><span class="sv">--:--</span
 							><span class="sh"></span>
 						</button>
 					</div>
@@ -343,13 +347,49 @@
 				<div class="card" id="offCard">
 					<div class="lab">Time off · vacation, doctor and sick days</div>
 					<div class="form">
-						<div class="field">
-							<label for="offType">Type</label>
-							<select id="offType">
-								<option value="vacation">Vacation</option>
-								<option value="doctor">Doctor appointment</option>
-								<option value="sick">Sick day</option>
-							</select>
+						<div class="field" style="grid-column: 1 / -1">
+							<label id="offTypeL">Type</label>
+							<input id="offType" type="hidden" value="vacation" />
+							<div
+								class="offtiles"
+								id="offTiles"
+								role="radiogroup"
+								aria-labelledby="offTypeL"
+							>
+								<button
+									class="otile on"
+									type="button"
+									role="radio"
+									aria-checked="true"
+									data-off="vacation"
+									style="--oc: var(--vacation)"
+								>
+									<svg data-ico="vacation" aria-hidden="true"></svg
+									><span>Vacation</span>
+								</button>
+								<button
+									class="otile"
+									type="button"
+									role="radio"
+									aria-checked="false"
+									data-off="doctor"
+									style="--oc: var(--doctor)"
+								>
+									<svg data-ico="doctor" aria-hidden="true"></svg
+									><span>Doctor</span>
+								</button>
+								<button
+									class="otile"
+									type="button"
+									role="radio"
+									aria-checked="false"
+									data-off="sick"
+									style="--oc: var(--sick)"
+								>
+									<svg data-ico="sick" aria-hidden="true"></svg
+									><span>Sick day</span>
+								</button>
+							</div>
 						</div>
 						<div class="field">
 							<label for="offFrom">Date</label
@@ -712,16 +752,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=29"></script>
-		<script src="js/data.js?v=29"></script>
-		<script src="js/github.js?v=29"></script>
-		<script src="js/timer.js?v=29"></script>
-		<script src="js/chart.js?v=29"></script>
-		<script src="js/hydration.js?v=29"></script>
-		<script src="js/work.js?v=29"></script>
-		<script src="js/clock.js?v=29"></script>
-		<script src="js/staff.js?v=29"></script>
-		<script src="js/settings.js?v=29"></script>
-		<script src="js/app.js?v=29"></script>
+		<script src="js/util.js?v=34"></script>
+		<script src="js/data.js?v=34"></script>
+		<script src="js/github.js?v=34"></script>
+		<script src="js/timer.js?v=34"></script>
+		<script src="js/chart.js?v=34"></script>
+		<script src="js/hydration.js?v=34"></script>
+		<script src="js/work.js?v=34"></script>
+		<script src="js/clock.js?v=34"></script>
+		<script src="js/staff.js?v=34"></script>
+		<script src="js/settings.js?v=34"></script>
+		<script src="js/app.js?v=34"></script>
 	</body>
 </html>

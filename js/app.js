@@ -277,6 +277,44 @@ const HUB_ICONS = {
 	],
 };
 
+const STATUS_COLOR = {
+	work: '--work',
+	lunch: '--lunch',
+	idle: '--idle',
+	done: '--done',
+	vacation: '--vacation',
+	doctor: '--doctor',
+	sick: '--sick',
+};
+
+// Which status icon a (job clock) day is in. Used by the Today card and the
+// week log; the Today card adds the wording around it.
+function dayStatus(day) {
+	day = day || {};
+	const off = dayOff(day);
+	if (off && isFullOff(off) && !day.s) return offKey(off);
+	if (day.e) return 'done';
+	if (day.ls && !day.le) return 'lunch';
+	if (day.s) return 'work';
+	return 'idle';
+}
+
+function statusIconSvg(key, cls) {
+	const i = HUB_ICONS[key] || HUB_ICONS.idle;
+	return `<svg class="${cls}" viewBox="${i[0]}" aria-hidden="true"><path d="${i[1]}"/></svg>`;
+}
+
+// Fill every <svg data-ico="work"> placeholder in the page with its icon.
+function fillStatusIcons() {
+	$$('svg[data-ico]').forEach((s) => {
+		const i = HUB_ICONS[s.dataset.ico];
+		if (!i || s.dataset.filled === s.dataset.ico) return;
+		s.setAttribute('viewBox', i[0]);
+		s.innerHTML = `<path d="${i[1]}"/>`;
+		s.dataset.filled = s.dataset.ico;
+	});
+}
+
 function renderHubClock() {
 	// job clock: what you are doing right now, as an icon, with its time
 	const day = clkDay(ymd(new Date())) || {};
@@ -301,7 +339,7 @@ function renderHubClock() {
 		time = `since ${day.ls}`;
 	} else if (day.s) {
 		icon = 'work';
-		color = 'var(--working)';
+		color = 'var(--work)';
 		label = 'Working';
 		time = `since ${day.s}`;
 	} else {
@@ -311,8 +349,6 @@ function renderHubClock() {
 		time = nowHM;
 	}
 	const extra = off && !isFullOff(off) ? ` · ${esc(offLabel(off))}` : '';
-	// the panel's top bar takes the colour of the current state too
-	$('#hubClock').style.setProperty('--pc', color);
 	$('#hubClock').innerHTML =
 		`<span class="p-title">Job clock</span>` +
 		`<div class="hubviz status" style="color:${color}"><svg viewBox="${HUB_ICONS[icon][0]}" aria-hidden="true"><path d="${HUB_ICONS[icon][1]}"/></svg></div>` +
@@ -321,9 +357,6 @@ function renderHubClock() {
 		(w != null || extra
 			? `<div class="muted">${w != null ? formatMinutesAsHM(w) + ' worked' : ''}${w != null ? extra : extra.replace(/^ · /, '')}</div>`
 			: '');
-	w != null || extra
-		? `<div class="muted">${w != null ? formatMinutesAsHM(w) + ' worked' : ''}${w != null ? extra : extra.replace(/^ · /, '')}</div>`
-		: '';
 }
 
 /* ---------- render everything that is visible ---------- */
@@ -331,6 +364,7 @@ function renderAll(forceSettings) {
 	renderSyncStatus();
 	renderBanner();
 	renderToday();
+	fillStatusIcons();
 	if (cur === 'staff') renderStaff();
 	if (cur === 'water') renderWater();
 	if (cur === 'discord') renderWork();

@@ -175,7 +175,7 @@ function renderClock(force) {
 		const el = $('#st-' + st.k);
 		const done = !!day[st.k];
 		const isNext = !!nx && nx.k === st.k;
-		el.className = 'stamp' + (isNext ? ' next' : '');
+		el.className = 'stamp' + (isNext ? ' next' : '') + (done ? ' rec' : '');
 		el.disabled = !isNext;
 		el.querySelector('.sv').textContent = done
 			? day[st.k]
@@ -228,7 +228,9 @@ function renderClockTable() {
 		const badge = o
 			? ` <span class="badge off-${o.type}">${esc(offLabel(o))}</span>`
 			: '';
-		rows += `<tr class="${k === tk ? 'today' : ''}"><th scope="row">${loc(d, { weekday: 'short', day: 'numeric', month: 'short' })}${badge}</th>${inp('s')}${inp('ls')}${inp('le')}${inp('e')}<td class="num">${w ? formatMinutesAsHM(w) : '–'}</td><td class="num ${w ? (w >= t ? 'pos' : 'neg') : ''}">${w ? formatSignedMinutes(w - t) : '–'}</td></tr>`;
+		const st = dayStatus(r);
+		const ico = statusIconSvg(st, 'dico').replace('<svg ', `<svg style="color:var(${STATUS_COLOR[st]});${st === 'idle' && !w ? 'opacity:.45' : ''}" `);
+		rows += `<tr class="${k === tk ? 'today' : ''}"><th scope="row"><span class="dayc">${ico}<span>${loc(d, { weekday: 'short', day: 'numeric', month: 'short' })}${badge}</span></span></th>${inp('s')}${inp('ls')}${inp('le')}${inp('e')}<td class="num">${w ? formatMinutesAsHM(w) : '–'}</td><td class="num ${w ? (w >= t ? 'pos' : 'neg') : ''}">${w ? formatSignedMinutes(w - t) : '–'}</td></tr>`;
 	}
 	$('#clkTable').innerHTML =
 		`<thead><tr><th>Day</th><th>Start</th><th>Lunch start</th><th>Lunch end</th><th>End</th><th class="num">Worked</th><th class="num">Vs target</th></tr></thead><tbody>${rows}</tbody>` +
@@ -344,7 +346,7 @@ function renderOffList() {
 					const b = g.dates[g.dates.length - 1];
 					const when = a === b ? fmt(a) : `${fmt(a)} – ${fmt(b)}`;
 					const n = g.dates.length;
-					return `<div class="offrow"><span class="when">${when}</span><span class="what"><span class="badge off-${g.o.type}">${esc(offLabel(g.o))}</span>${n > 1 ? `<span class="muted">${n} days</span>` : ''}</span><button class="x del" type="button" data-offdel="${g.dates.join(',')}" aria-label="Remove">×</button></div>`;
+					return `<div class="offrow">${statusIconSvg(offKey(g.o), 'dico').replace('<svg ', `<svg style="color:var(${STATUS_COLOR[offKey(g.o)]})" `)}<span class="when">${when}</span><span class="what"><span class="badge off-${g.o.type}">${esc(offLabel(g.o))}</span>${n > 1 ? `<span class="muted">${n} days</span>` : ''}</span><button class="x del" type="button" data-offdel="${g.dates.join(',')}" aria-label="Remove">×</button></div>`;
 				})
 				.join('')
 		: '<div class="empty">No time off added. Days without any data are ignored anyway, so only add days you want to see marked.</div>';
@@ -493,7 +495,14 @@ function clockInit() {
 	$('#v-clock').addEventListener('click', (e) => {
 		const t = e.target.closest('button');
 		if (!t) return;
-		if (t.dataset.stamp) pressStamp(t.dataset.stamp);
+		if (t.dataset.off) {
+			$('#offType').value = t.dataset.off;
+			$$('#offTiles .otile').forEach((b) => {
+				const on = b === t;
+				b.classList.toggle('on', on);
+				b.setAttribute('aria-checked', on ? 'true' : 'false');
+			});
+		} else if (t.dataset.stamp) pressStamp(t.dataset.stamp);
 		else if (t.dataset.tw) {
 			clkWeekOffset = Math.min(0, clkWeekOffset + Number(t.dataset.tw));
 			renderClockTable();

@@ -308,7 +308,12 @@ const hydChartCfg = {
 	goal: hydGoal,
 	goalLabel: 'Goal',
 	aria: 'Drinks logged',
-	donut: { inner: 0, prefix: 'Hydration' },
+	donut: {
+		inner: 0.593,
+		prefix: 'Hydration',
+		// always litres in the middle, e.g. 0.85L, 2.4L
+		center: (ml) => `${Number((ml / 1000).toFixed(2))}L`,
+	},
 	stats: (i) => {
 		const o = [['Total', formatMl(i.sum)]];
 		if (i.range !== 'day') o.push(['Daily average', formatMl(i.sum / i.days)]);

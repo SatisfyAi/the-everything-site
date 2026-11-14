@@ -1,12 +1,12 @@
 // ===================== Charts =====================
 // Two renderers, both inline SVG (crisp at any zoom):
-//  1. drawRingChart: the donut / pie "report" image, with its legend. Kept
+//  1. drawRingChart: the donut "report" image, with its legend. Kept
 //     from the original site, including the PNG export.
 //  2. the stacked bar chart used on every section (Day / Week / Month /
 //     Year / All time, with the previous/next arrows).
 
 /* ------------------------------------------------------------------ */
-/* 1. Ring chart (donut / pie)                                         */
+/* 1. Ring chart (donut)                                               */
 /* ------------------------------------------------------------------ */
 
 const CHART_FONT_FAMILY = "'Poppins', 'Segoe UI', sans-serif";
@@ -43,21 +43,11 @@ function polarPoint(cx, cy, r, angle) {
 	return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
 }
 
-// SVG path for one ring slice between two angles. With innerR === 0 this
-// degenerates to a normal pie wedge, so the same builder covers pie and donut.
+// SVG path for one donut slice between two angles.
 function ringSlicePath(cx, cy, innerR, outerR, startAngle, endAngle) {
 	const outerStart = polarPoint(cx, cy, outerR, startAngle);
 	const outerEnd = polarPoint(cx, cy, outerR, endAngle);
 	const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
-
-	if (innerR <= 0) {
-		return [
-			`M ${cx} ${cy}`,
-			`L ${outerStart.x} ${outerStart.y}`,
-			`A ${outerR} ${outerR} 0 ${largeArc} 1 ${outerEnd.x} ${outerEnd.y}`,
-			'Z',
-		].join(' ');
-	}
 
 	const innerStart = polarPoint(cx, cy, innerR, endAngle);
 	const innerEnd = polarPoint(cx, cy, innerR, startAngle);
@@ -71,11 +61,10 @@ function ringSlicePath(cx, cy, innerR, outerR, startAngle, endAngle) {
 	].join(' ');
 }
 
-// A full circle, or a full ring with a see-through hole (no background colour).
+// A full ring with a see-through hole (no background colour).
 function ringHolePath(cx, cy, innerR, outerR, attrs) {
 	let d = `M ${cx - outerR} ${cy} a ${outerR} ${outerR} 0 1 0 ${outerR * 2} 0 a ${outerR} ${outerR} 0 1 0 ${-outerR * 2} 0 Z`;
-	if (innerR > 0)
-		d += ` M ${cx - innerR} ${cy} a ${innerR} ${innerR} 0 1 1 ${innerR * 2} 0 a ${innerR} ${innerR} 0 1 1 ${-innerR * 2} 0 Z`;
+	d += ` M ${cx - innerR} ${cy} a ${innerR} ${innerR} 0 1 1 ${innerR * 2} 0 a ${innerR} ${innerR} 0 1 1 ${-innerR * 2} 0 Z`;
 	return `<path ${attrs} fill-rule="evenodd" d="${d}" />`;
 }
 
@@ -88,13 +77,13 @@ function sliceGradientDef(id, baseColor) {
 }
 
 // `container` is a plain element that this function fills with an <svg>.
-//   formatTotal(number)  - formats the center total label (donut only)
-//   innerRadiusRatio     - 0 for a pie; 0-1 for a donut (hole this fraction
-//                          of outerR, with a center total)
+//   formatTotal(number)  - formats the legend values
+//   formatCenter(number) - formats the center total (defaults to formatTotal)
+//   innerRadiusRatio     - hole size as a fraction of the outer radius
 let _ringUid = 0;
 function drawRingChart(
 	container,
-	{ title, segments, formatTotal, innerRadiusRatio },
+	{ title, segments, formatTotal, formatCenter, innerRadiusRatio },
 ) {
 	const W = 1300;
 	const topMargin = 130;
@@ -168,7 +157,7 @@ function drawRingChart(
 	const H = topMargin + contentHeight + bottomMargin;
 	const cy = topMargin + contentHeight / 2;
 
-	// ---- Ring / pie ----
+	// ---- Ring ----
 	let defs = '';
 	let ringMarkup;
 
@@ -193,10 +182,10 @@ function drawRingChart(
 		ringMarkup = ringHolePath(cx, cy, innerR, outerR, 'fill="#2a2a2a"');
 	}
 
-	// ---- Center total (donut only) ----
+	// ---- Center total ----
 	let centerMarkup = '';
-	if (innerR > 0) {
-		const totalLabel = formatTotal(total);
+	{
+		const totalLabel = (formatCenter || formatTotal)(total);
 		let totalFontSize = 60;
 		ctx.font = `800 ${totalFontSize}px ${CHART_FONT_FAMILY}`;
 		const maxTotalWidth = innerR * 2 - 40;
@@ -257,7 +246,9 @@ async function exportRingAsPng(box, filename) {
 	const svgHeight = Number(svg.getAttribute('height'));
 
 	const svgString = new XMLSerializer().serializeToString(svg);
-	const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+	const svgBlob = new Blob([svgString], {
+		type: 'image/svg+xml;charset=utf-8',
+	});
 	const svgUrl = URL.createObjectURL(svgBlob);
 
 	try {
@@ -279,13 +270,20 @@ async function exportRingAsPng(box, filename) {
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-		const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+		const blob = await new Promise((resolve) =>
+			canvas.toBlob(resolve, 'image/png'),
+		);
 		const file = new File([blob], filename, { type: 'image/png' });
 
 		// Phones and tablets (touch as the main input) get the share sheet so the
 		// image can go straight to Photos; desktops get a normal file download.
-		const touchDevice = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-		if (touchDevice && navigator.canShare && navigator.canShare({ files: [file] })) {
+		const touchDevice =
+			window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+		if (
+			touchDevice &&
+			navigator.canShare &&
+			navigator.canShare({ files: [file] })
+		) {
 			try {
 				await navigator.share({ files: [file] });
 			} catch (err) {
@@ -311,7 +309,13 @@ async function exportRingAsPng(box, filename) {
 /* 2. Stacked bar chart                                                */
 /* ------------------------------------------------------------------ */
 
-const RANGE_LABEL = { day: 'Day', week: 'Week', month: 'Month', year: 'Year', all: 'All time' };
+const RANGE_LABEL = {
+	day: 'Day',
+	week: 'Week',
+	month: 'Month',
+	year: 'Year',
+	all: 'All time',
+};
 const MIN_STEPS = [10, 15, 30, 60, 120, 240, 480, 600, 1200, 2400, 6000, 12000];
 
 const charts = {}; // id -> { cfg, st: { range, off, view }, info }
@@ -340,13 +344,23 @@ function makeBuckets(range, off, firstT) {
 		for (let h = 0; h < 24; h++) {
 			list.push({
 				s: new Date(d.getFullYear(), d.getMonth(), d.getDate(), h).getTime(),
-				e: new Date(d.getFullYear(), d.getMonth(), d.getDate(), h + 1).getTime(),
+				e: new Date(
+					d.getFullYear(),
+					d.getMonth(),
+					d.getDate(),
+					h + 1,
+				).getTime(),
 				label: String(h),
 				tick: h % 3 === 0,
 				long: `${loc(d, { weekday: 'short', day: 'numeric', month: 'short' })}, ${pad(h)}:00`,
 			});
 		}
-		report = loc(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+		report = loc(d, {
+			weekday: 'long',
+			day: 'numeric',
+			month: 'long',
+			year: 'numeric',
+		});
 		title = off === 0 ? 'Today' : report;
 	} else if (range === 'week') {
 		const m = mondayOf(addD(T, 7 * off));
@@ -398,7 +412,10 @@ function makeBuckets(range, off, firstT) {
 		}
 		const last = new Date(T.getFullYear(), T.getMonth(), 1);
 		const total =
-			(last.getFullYear() - a.getFullYear()) * 12 + last.getMonth() - a.getMonth() + 1;
+			(last.getFullYear() - a.getFullYear()) * 12 +
+			last.getMonth() -
+			a.getMonth() +
+			1;
 		const every = total > 24 ? 3 : total > 12 ? 2 : 1;
 		for (let i = 0; i < total; i++) {
 			const d = new Date(a.getFullYear(), a.getMonth() + i, 1);
@@ -423,21 +440,28 @@ function makeBuckets(range, off, firstT) {
 //   data(list)                 [{ vals: { k: value } }] per time slot
 //   first()                    earliest timestamp with data (for All time)
 //   steps, emptyStep, axis(v), fmt(v), goal(), aria, stats(info)
-//   donut: { inner, prefix }   optional ring/pie view of the same range
+//   donut: { inner, prefix, center? }   optional donut view of the same range
 function chartInit(id, cfg) {
-	charts[id] = { cfg, st: { range: cfg.range, off: 0, view: 'bars' }, info: null };
+	charts[id] = {
+		cfg,
+		st: { range: cfg.range, off: 0, view: 'bars' },
+		info: null,
+	};
 	const donutTabs = cfg.donut
 		? `<div class="viewrow">
         <div class="tabs sm" role="group" aria-label="Chart type">
           <button class="tab" type="button" data-view="bars">Bars</button>
-          <button class="tab" type="button" data-view="donut">${cfg.donut.inner > 0 ? 'Donut' : 'Pie'}</button>
+          <button class="tab" type="button" data-view="donut">Donut</button>
         </div>
         <button class="btn ghost sm" type="button" data-dl hidden>Download image</button>
       </div>`
 		: '';
 	$('#chart-' + id).innerHTML = `<div class="chart-head">
       <div class="tabs" role="group" aria-label="Range">${cfg.ranges
-				.map((r) => `<button class="tab" type="button" data-range="${r}">${RANGE_LABEL[r]}</button>`)
+				.map(
+					(r) =>
+						`<button class="tab" type="button" data-range="${r}">${RANGE_LABEL[r]}</button>`,
+				)
 				.join('')}</div>
       <div class="cnav">
         <button class="icon" type="button" data-nav="-1" aria-label="Earlier">‹</button>
@@ -464,7 +488,9 @@ function chartDraw(id) {
 	const list = bk.list;
 	const data = cfg.data(list);
 	const series = cfg.series();
-	const totals = data.map((d) => series.reduce((a, s) => a + (d.vals[s.k] || 0), 0));
+	const totals = data.map((d) =>
+		series.reduce((a, s) => a + (d.vals[s.k] || 0), 0),
+	);
 	// `shown` (optional) is what a bar means for the readout, when that is not
 	// the full stack height (e.g. the red "under target" part is not time worked).
 	const shown = cfg.shown ? data.map(cfg.shown) : totals;
@@ -485,10 +511,17 @@ function chartDraw(id) {
 
 	$('.stats', host).innerHTML = cfg
 		.stats({ sum, totals, list, days, range: st.range })
-		.map((r) => `<div class="stat"><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`)
+		.map(
+			(r) =>
+				`<div class="stat"><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`,
+		)
 		.join('');
-	$$('[data-range]', host).forEach((b) => b.classList.toggle('on', b.dataset.range === st.range));
-	$$('[data-view]', host).forEach((b) => b.classList.toggle('on', b.dataset.view === st.view));
+	$$('[data-range]', host).forEach((b) =>
+		b.classList.toggle('on', b.dataset.range === st.range),
+	);
+	$$('[data-view]', host).forEach((b) =>
+		b.classList.toggle('on', b.dataset.view === st.view),
+	);
 	$('.ctitle', host).textContent = bk.title;
 	$('.cnav', host).style.visibility = st.range === 'all' ? 'hidden' : 'visible';
 	$('[data-nav="1"]', host).disabled = st.off >= 0;
@@ -512,6 +545,7 @@ function chartDraw(id) {
 			title: bk.report,
 			segments,
 			formatTotal: cfg.fmt,
+			formatCenter: cfg.donut.center,
 			innerRadiusRatio: cfg.donut.inner,
 		});
 		c.report = bk.report;
@@ -537,8 +571,14 @@ function chartDraw(id) {
 		top = Math.ceil(max / step) * step;
 	}
 
-	const W = 640, H = 250, L = 52, R = 8, T = 14, B = 28;
-	const iw = W - L - R, ih = H - T - B;
+	const W = 640,
+		H = 250,
+		L = 52,
+		R = 8,
+		T = 14,
+		B = 28;
+	const iw = W - L - R,
+		ih = H - T - B;
 	const n = list.length;
 	const band = iw / n;
 	const bw = Math.max(2, Math.min(band * 0.7, 44));
@@ -567,7 +607,8 @@ function chartDraw(id) {
 	if (goal > 0 && goal <= top) {
 		g += `<line class="goal" x1="${L}" x2="${W - R}" y1="${Y(goal).toFixed(1)}" y2="${Y(goal).toFixed(1)}"/><text class="gl" x="${W - R}" y="${(Y(goal) - 5).toFixed(1)}" text-anchor="end">${cfg.goalLabel || 'Goal'} ${cfg.fmt(goal)}</text>`;
 	}
-	$('.plot', host).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${cfg.aria}, ${bk.title}, total ${cfg.fmt(sum)}`)}">${g}</svg>`;
+	$('.plot', host).innerHTML =
+		`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${cfg.aria}, ${bk.title}, total ${cfg.fmt(sum)}`)}">${g}</svg>`;
 
 	const lg = series
 		.map((s) => ({ s, v: data.reduce((a, d) => a + (d.vals[s.k] || 0), 0) }))
@@ -609,7 +650,9 @@ function chartReadout(host, i) {
 
 // Chart controls (range tabs, arrows, bars/donut, download) and bar hover.
 document.addEventListener('click', (e) => {
-	const t = e.target.closest('[data-range],[data-nav],[data-view],[data-dl],.hit');
+	const t = e.target.closest(
+		'[data-range],[data-nav],[data-view],[data-dl],.hit',
+	);
 	if (!t) return;
 	const host = t.closest('[id^="chart-"]');
 	if (!host) return;
