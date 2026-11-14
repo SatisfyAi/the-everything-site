@@ -8,7 +8,7 @@ private GitHub repo, so the same data is on every device.
 | --------- | ------------------------------------------------------------------------------------------------ |
 | Today     | One-screen overview: hydration glass, Discord donut, job-clock status, upcoming staff milestones |
 | Hydration | Log drinks, charts per day / week / month / year / all time, history                             |
-| Discord   | Timer and manual entries for staff-team-manager work, donut/pie and bar charts                   |
+| Discord   | Timer and manual entries for staff-team-manager work, donut and bar charts                       |
 | Job clock | Start / lunch start / lunch end / end stamps, time off, week log, charts                         |
 | Staff     | Staff list with join/leave dates, milestones, downloadable calendar image                        |
 | Settings  | GitHub connection, theme, hydration goal and drinks, Discord categories, clock numbers           |
@@ -34,7 +34,7 @@ private GitHub repo, so the same data is on every device.
 - **Log a drink**: choose drink, amount (ml), date and time, or tap one of the
   quick-amount buttons (the amounts are set per drink in Settings).
 - **Charts**: stacked bars per drink for Day, Week, Month, Year and All time,
-  with previous/next navigation, plus the glass view and a pie/donut.
+  with previous/next navigation, plus the glass view and a donut with the total litres in the middle.
 - **History**: every entry, newest first, with edit and delete.
 - Daily goal and drinks (colour, name, one-tap amount) are in Settings.
 
@@ -46,8 +46,8 @@ private GitHub repo, so the same data is on every device.
   stop it, then the finished session is saved to GitHub.
 - **Add a session you forgot**: category, date, start, end (tick "next day"
   if it passes midnight) and a note.
-- **Charts**: donut/pie per category plus stacked bars for Day, Week, Month,
-  Year and All time. Donuts and pies are drawn without lines between slices
+- **Charts**: donut per category plus stacked bars for Day, Week, Month,
+  Year and All time. Donuts are drawn without lines between slices
   and do not depend on the background colour.
 - **History**: all sessions with edit and delete.
 
@@ -185,7 +185,7 @@ your repo is named differently).
 - `js/github.js`: GitHub store, queue and local fallback, `REPO_CONFIG`
 - `js/data.js`: defaults and data helpers
 - `js/app.js`: navigation, Today view, status icons, live refresh
-- `js/chart.js`: stacked-bar, pie and donut charts and PNG export
+- `js/chart.js`: stacked-bar and donut charts and PNG export
 - `js/hydration.js`, `js/work.js`, `js/clock.js`, `js/staff.js`: the sections
 - `js/timer.js`: the running Discord timer
 - `js/settings.js`: settings page
@@ -195,7 +195,7 @@ your repo is named differently).
 ## Notes
 
 - **Cache busting**: scripts and the stylesheet are loaded with `?v=N`
-  (currently `v=33`). After changing a file, raise the number in
+  (currently `v=34`). After changing a file, raise the number in
   `index.html` so phones do not use an old copy.
 - **Fonts**: Bricolage Grotesque, DM Mono, DM Sans and Poppins (Poppins is
   used for exported images).
