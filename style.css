@@ -20,10 +20,10 @@
 	--doctor: #4fc3f7;
 	--vacation: #8b7dff;
 	--sick: #ff9f1c;
-	--working: #ea8732;
-	--lunch: #ff6f91;
+	--work: #ea8732;
+	--lunch: #ec6aa8;
+	--idle: #8c95a5;
 	--done: #6fd08c;
-	--idle: #8c9bb5;
 	--pos: #6fd08c;
 	--neg: #ff7a7a;
 	--danger: #ff6b6b;
@@ -52,10 +52,10 @@
 	--doctor: #0288d1;
 	--vacation: #5b4de0;
 	--sick: #c2610c;
-	--working: #ea8732;
-	--lunch: #d6336c;
+	--work: #d9731a;
+	--lunch: #d63f8c;
+	--idle: #6b7280;
 	--done: #1f8f4a;
-	--idle: #64748b;
 	--pos: #1f8f4a;
 	--neg: #d23a3a;
 	--danger: #d23a3a;
@@ -83,10 +83,10 @@
 		--doctor: #0288d1;
 		--vacation: #5b4de0;
 		--sick: #c2610c;
-		--working: #ea8732;
-		--lunch: #d6336c;
+		--work: #d9731a;
+		--lunch: #d63f8c;
+		--idle: #6b7280;
 		--done: #1f8f4a;
-		--idle: #64748b;
 		--pos: #1f8f4a;
 		--neg: #d23a3a;
 		--danger: #d23a3a;
@@ -1669,4 +1669,92 @@ body[data-v='today'] {
 }
 #stfWrap .p-head {
 	margin-bottom: 4px;
+}
+
+/* ---------- Job clock page: status icons ---------- */
+.stamp {
+	position: relative;
+}
+.stamp .sico {
+	position: absolute;
+	top: 14px;
+	right: 14px;
+	width: 30px;
+	height: 30px;
+	fill: currentColor;
+	opacity: 0.3;
+	color: var(--work);
+}
+.stamp[data-stamp='ls'] .sico {
+	color: var(--lunch);
+}
+.stamp[data-stamp='e'] .sico {
+	color: var(--done);
+}
+.stamp.rec .sico {
+	opacity: 0.9;
+}
+.stamp.next .sico {
+	color: #14110a;
+	opacity: 1;
+}
+.stamp.next {
+	background: var(--work);
+	border-color: var(--work);
+}
+.stamp.next[data-stamp='ls'] {
+	background: var(--lunch);
+	border-color: var(--lunch);
+}
+.stamp.next[data-stamp='e'] {
+	background: var(--done);
+	border-color: var(--done);
+}
+.dayc {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+.dico {
+	width: 18px;
+	height: 18px;
+	flex: none;
+	fill: currentColor;
+}
+.offrow .dico {
+	width: 22px;
+	height: 22px;
+}
+.offtiles {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+}
+.otile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 6px;
+	min-height: 76px;
+	border: 1px solid var(--line);
+	border-radius: 16px;
+	background: var(--card2);
+	color: var(--muted);
+}
+.otile svg {
+	width: 28px;
+	height: 28px;
+	fill: var(--oc);
+	opacity: 0.75;
+}
+.otile.on {
+	border: 2px solid var(--oc);
+	background: color-mix(in srgb, var(--oc) 13%, var(--card2));
+	color: var(--text);
+	font-weight: 700;
+	padding: 11px 5px;
+}
+.otile.on svg {
+	opacity: 1;
 }
