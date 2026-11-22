@@ -17,7 +17,7 @@ private GitHub repo, so the same data is on every device.
 - The bottom bar (top bar on desktop) has three sections: **Hydration**,
   **Discord** and **Job clock**. Discord stays highlighted on both its Time and
   Staff pages. Settings is the sliders icon in the header.
-- **Today** is the Daybook logo in the header (it has a small calendar icon).
+- **Today** is the Daybook logo in the header (with a small dashboard icon).
   On phones there is also a round **Today button** floating above the bar at
   the right. It hides while you scroll down and comes back when you scroll up,
   and it is not shown on Today itself.
@@ -204,10 +204,10 @@ your repo is named differently).
 ## Notes
 
 - **Cache busting**: scripts and the stylesheet are loaded with `?v=N`
-  (currently `v=35`). After changing a file, raise the number in
+  (currently `v=36`). After changing a file, raise the number in
   `index.html` so phones do not use an old copy.
-- **Fonts**: Bricolage Grotesque, DM Mono, DM Sans and Poppins (Poppins is
-  used for exported images).
+- **Fonts**: Outfit (headings, logo, big numbers), Inter (body text) and
+  Roboto Mono (labels and numbers), loaded from Google Fonts in `index.html`.
 - **Icons**: the Today and Job clock status icons are Font Awesome Free
   (CC BY 4.0 for icons); keep the licence comment above `HUB_ICONS` in
   `js/app.js`.

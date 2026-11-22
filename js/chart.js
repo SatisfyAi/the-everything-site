@@ -9,7 +9,7 @@
 /* 1. Ring chart (donut)                                               */
 /* ------------------------------------------------------------------ */
 
-const CHART_FONT_FAMILY = "'Poppins', 'Segoe UI', sans-serif";
+const CHART_FONT_FAMILY = "'Outfit', 'Segoe UI', sans-serif";
 
 // A detached canvas used ONLY for text-width measurement (ctx.measureText).
 const _chartMeasureCtx = document.createElement('canvas').getContext('2d');
