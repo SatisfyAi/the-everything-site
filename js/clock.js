@@ -181,7 +181,7 @@ function renderClock(force) {
 			? day[st.k]
 			: isNext
 				? shiftTime(st)
-				: '–:–';
+				: '-:-';
 		const sh = st.shift ? Number(clkSettings()[st.shift]) || 0 : 0;
 		el.querySelector('.sh').textContent = done
 			? 'Recorded'
@@ -229,7 +229,10 @@ function renderClockTable() {
 			? ` <span class="badge off-${o.type}">${esc(offLabel(o))}</span>`
 			: '';
 		const st = dayStatus(r);
-		const ico = statusIconSvg(st, 'dico').replace('<svg ', `<svg style="color:var(${STATUS_COLOR[st]});${st === 'idle' && !w ? 'opacity:.45' : ''}" `);
+		const ico = statusIconSvg(st, 'dico').replace(
+			'<svg ',
+			`<svg style="color:var(${STATUS_COLOR[st]});${st === 'idle' && !w ? 'opacity:.45' : ''}" `,
+		);
 		rows += `<tr class="${k === tk ? 'today' : ''}"><th scope="row"><span class="dayc">${ico}<span>${loc(d, { weekday: 'short', day: 'numeric', month: 'short' })}${badge}</span></span></th>${inp('s')}${inp('ls')}${inp('le')}${inp('e')}<td class="num">${w ? formatMinutesAsHM(w) : '–'}</td><td class="num ${w ? (w >= t ? 'pos' : 'neg') : ''}">${w ? formatSignedMinutes(w - t) : '–'}</td></tr>`;
 	}
 	$('#clkTable').innerHTML =
