@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=34" />
+		<link rel="icon" type="image/png" href="hub.png?v=35" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,38 +33,34 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=34" />
+		<link rel="stylesheet" href="style.css?v=35" />
 	</head>
 	<body data-v="today">
 		<header class="top">
-			<button class="brand" data-v="today" type="button">Daybook</button>
+			<button
+				class="brand"
+				data-v="today"
+				type="button"
+				aria-label="Daybook, go to Today"
+			>
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<rect x="4" y="5" width="16" height="15" rx="3" />
+					<path d="M4 10h16M9 3v4M15 3v4" /></svg
+				><span>Daybook</span>
+			</button>
 			<nav id="nav" aria-label="Sections">
-				<a href="#staff" data-v="staff" class="n-staff"
-					><svg viewBox="0 0 24 24">
-						<circle cx="9" cy="8" r="3.2" />
-						<path
-							d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.2a3.2 3.2 0 0 1 0 5.6M18 14.3c1.8.8 3 2.6 3 4.7"
-						/></svg
-					><span>Discord staff</span></a
-				>
-				<a href="#discord" data-v="discord" class="n-discord"
-					><svg viewBox="0 0 24 24">
-						<circle cx="12" cy="14" r="7" />
-						<path d="M12 14v-4M9 3h6M18.5 6.5L20 5" /></svg
-					><span>Discord clock</span></a
-				>
-				<a href="#today" data-v="today" class="n-today"
-					><svg viewBox="0 0 24 24">
-						<rect x="4" y="5" width="16" height="15" rx="3" />
-						<path d="M4 10h16M9 3v4M15 3v4" /></svg
-					><span>Today</span></a
-				>
 				<a href="#water" data-v="water" class="n-water"
 					><svg viewBox="0 0 24 24">
 						<path
 							d="M12 3c3.5 4.2 6 7 6 10a6 6 0 0 1-12 0c0-3 2.5-5.8 6-10z"
 						/></svg
 					><span>Hydration</span></a
+				>
+				<a href="#discord" data-v="discord" class="n-discord"
+					><svg viewBox="0 0 24 24">
+						<circle cx="12" cy="14" r="7" />
+						<path d="M12 14v-4M9 3h6M18.5 6.5L20 5" /></svg
+					><span>Discord</span></a
 				>
 				<a href="#clock" data-v="clock" class="n-clock"
 					><svg viewBox="0 0 24 24">
@@ -88,6 +84,19 @@
 				></a>
 			</div>
 		</header>
+
+		<button
+			id="fabToday"
+			class="fab"
+			data-v="today"
+			type="button"
+			aria-label="Go to Today"
+		>
+			<svg viewBox="0 0 24 24" aria-hidden="true">
+				<rect x="4" y="5" width="16" height="15" rx="3" />
+				<path d="M4 10h16M9 3v4M15 3v4" />
+			</svg>
+		</button>
 
 		<div id="banner" class="banner" hidden>
 			<span class="msg" id="bannerMsg"></span>
@@ -211,8 +220,12 @@
 			<!-- ===================== DISCORD TIME ===================== -->
 			<section id="v-discord" class="view" hidden>
 				<div>
-					<div class="eyebrow">Staff team manager</div>
-					<h1 class="h-display">Discord time</h1>
+					<div class="eyebrow">Discord</div>
+					<h1 class="h-display">Team manager</h1>
+				</div>
+				<div class="tabs dseg" role="group" aria-label="Discord section">
+					<button class="tab on" type="button" data-v="discord">Time</button>
+					<button class="tab" type="button" data-v="staff">Staff</button>
 				</div>
 				<div class="card timer">
 					<div>
@@ -464,8 +477,12 @@
 			<!-- ===================== STAFF ===================== -->
 			<section id="v-staff" class="view" hidden>
 				<div>
-					<div class="eyebrow">Team</div>
-					<h1 class="h-display">Staff</h1>
+					<div class="eyebrow">Discord</div>
+					<h1 class="h-display">Team manager</h1>
+				</div>
+				<div class="tabs dseg" role="group" aria-label="Discord section">
+					<button class="tab" type="button" data-v="discord">Time</button>
+					<button class="tab on" type="button" data-v="staff">Staff</button>
 				</div>
 
 				<div class="card">
@@ -752,16 +769,16 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=34"></script>
-		<script src="js/data.js?v=34"></script>
-		<script src="js/github.js?v=34"></script>
-		<script src="js/timer.js?v=34"></script>
-		<script src="js/chart.js?v=34"></script>
-		<script src="js/hydration.js?v=34"></script>
-		<script src="js/work.js?v=34"></script>
-		<script src="js/clock.js?v=34"></script>
-		<script src="js/staff.js?v=34"></script>
-		<script src="js/settings.js?v=34"></script>
-		<script src="js/app.js?v=34"></script>
+		<script src="js/util.js?v=35"></script>
+		<script src="js/data.js?v=35"></script>
+		<script src="js/github.js?v=35"></script>
+		<script src="js/timer.js?v=35"></script>
+		<script src="js/chart.js?v=35"></script>
+		<script src="js/hydration.js?v=35"></script>
+		<script src="js/work.js?v=35"></script>
+		<script src="js/clock.js?v=35"></script>
+		<script src="js/staff.js?v=35"></script>
+		<script src="js/settings.js?v=35"></script>
+		<script src="js/app.js?v=35"></script>
 	</body>
 </html>

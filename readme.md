@@ -4,14 +4,23 @@ A personal dashboard that runs entirely in the browser: no server, no build
 step, plain HTML/CSS/JS. Everything you enter is saved as JSON files in a
 private GitHub repo, so the same data is on every device.
 
-| Section   | What it does                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------------ |
-| Today     | One-screen overview: hydration glass, Discord donut, job-clock status, upcoming staff milestones |
-| Hydration | Log drinks, charts per day / week / month / year / all time, history                             |
-| Discord   | Timer and manual entries for staff-team-manager work, donut and bar charts                       |
-| Job clock | Start / lunch start / lunch end / end stamps, time off, week log, charts                         |
-| Staff     | Staff list with join/leave dates, milestones, downloadable calendar image                        |
-| Settings  | GitHub connection, theme, hydration goal and drinks, Discord categories, clock numbers           |
+| Section   | What it does                                                                                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Today     | One-screen overview: hydration glass, Discord donut, job-clock status, upcoming staff milestones                                                                 |
+| Hydration | Log drinks, charts per day / week / month / year / all time, history                                                                                             |
+| Discord   | Two pages behind one tab, switched with **Time \| Staff** at the top: Time (timer, manual entries, charts, history) and Staff (list, milestones, calendar image) |
+| Job clock | Start / lunch start / lunch end / end stamps, time off, week log, charts                                                                                         |
+| Settings  | GitHub connection, theme, hydration goal and drinks, Discord categories, clock numbers                                                                           |
+
+## Navigation
+
+- The bottom bar (top bar on desktop) has three sections: **Hydration**,
+  **Discord** and **Job clock**. Discord stays highlighted on both its Time and
+  Staff pages. Settings is the sliders icon in the header.
+- **Today** is the Daybook logo in the header (it has a small calendar icon).
+  On phones there is also a round **Today button** floating above the bar at
+  the right. It hides while you scroll down and comes back when you scroll up,
+  and it is not shown on Today itself.
 
 ## Sections
 
@@ -75,7 +84,7 @@ private GitHub repo, so the same data is on every device.
   vacation and sick time in their own colours. Year and All time show only the
   grey hours plus doctor/vacation/sick, with no red or green.
 
-### Staff
+### Staff (the second page of the Discord tab)
 
 - **List** with Current / Former / All filters, search, edit and delete. A
   person has a name, a join date, an optional leave date and optional Discord
@@ -195,7 +204,7 @@ your repo is named differently).
 ## Notes
 
 - **Cache busting**: scripts and the stylesheet are loaded with `?v=N`
-  (currently `v=34`). After changing a file, raise the number in
+  (currently `v=35`). After changing a file, raise the number in
   `index.html` so phones do not use an old copy.
 - **Fonts**: Bricolage Grotesque, DM Mono, DM Sans and Poppins (Poppins is
   used for exported images).

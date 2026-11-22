@@ -53,7 +53,12 @@ function show(v) {
 	$$('.view').forEach((x) => {
 		x.hidden = x.id !== 'v-' + v;
 	});
-	$$('#nav a').forEach((a) => a.classList.toggle('on', a.dataset.v === v));
+	// Staff lives inside the Discord section, so Discord stays lit on both pages
+	const navV = v === 'staff' ? 'discord' : v;
+	$$('#nav a').forEach((a) => a.classList.toggle('on', a.dataset.v === navV));
+	$('.brand').classList.toggle('on', v === 'today');
+	$$('.dseg .tab').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
+	$('#fabToday').classList.remove('away');
 	$('#gear').classList.toggle('on', v === 'settings');
 	try {
 		localStorage.setItem('daybook-view', v);
@@ -410,6 +415,19 @@ function tick() {
 		renderAll();
 	}
 }
+
+/* ---------- floating Today button: hides while scrolling down ---------- */
+let lastY = 0;
+window.addEventListener(
+	'scroll',
+	() => {
+		const y = window.scrollY;
+		if (Math.abs(y - lastY) < 8) return;
+		$('#fabToday').classList.toggle('away', y > lastY && y > 80);
+		lastY = y;
+	},
+	{ passive: true },
+);
 
 /* ---------- events ---------- */
 document.addEventListener('click', (e) => {
