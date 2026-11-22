@@ -249,7 +249,7 @@ function renderWork() {
 					const c = workCat(s.category);
 					const a = sessionStart(s);
 					const b = sessionEnd(s);
-					return `<div class="row"><span class="when">${dateLabel(a)} ${hm(new Date(a))}–${hm(new Date(b))}</span><span class="what"><i class="dotc" style="background:${normHex(c.color)}"></i><span>${esc(c.label)}${s.note ? ' · ' + esc(s.note) : ''}</span></span><span class="val">${formatMinutesAsHM(Number(s.minutes) || 0)}</span><button class="x ed" type="button" data-edit="${esc(s.id)}" aria-label="Edit session">✎</button><button class="x del" type="button" data-del="${esc(s.id)}" aria-label="Delete session">×</button></div>`;
+					return `<div class="row"><span class="when">${dateLabel(a)} ${hm(new Date(a))}-${hm(new Date(b))}</span><span class="what"><i class="dotc" style="background:${normHex(c.color)}"></i><span>${esc(c.label)}${s.note ? ' · ' + esc(s.note) : ''}</span></span><span class="val">${formatMinutesAsHM(Number(s.minutes) || 0)}</span><button class="x ed" type="button" data-edit="${esc(s.id)}" aria-label="Edit session">✎</button><button class="x del" type="button" data-del="${esc(s.id)}" aria-label="Delete session">×</button></div>`;
 				})
 				.join('')
 		: '<div class="empty">No sessions for this period. Pick a category and press Start.</div>';

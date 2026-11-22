@@ -9,7 +9,7 @@
 /* 1. Ring chart (donut)                                               */
 /* ------------------------------------------------------------------ */
 
-const CHART_FONT_FAMILY = "'Poppins', 'Segoe UI', sans-serif";
+const CHART_FONT_FAMILY = "'Outfit', 'Segoe UI', sans-serif";
 
 // A detached canvas used ONLY for text-width measurement (ctx.measureText).
 const _chartMeasureCtx = document.createElement('canvas').getContext('2d');
@@ -326,9 +326,9 @@ function weekTitle(monday) {
 		monday.getMonth() === last.getMonth() &&
 		monday.getFullYear() === last.getFullYear()
 	) {
-		return `${monday.getDate()} – ${last.getDate()} ${loc(last, { month: 'long' })} ${last.getFullYear()}`;
+		return `${monday.getDate()} - ${last.getDate()} ${loc(last, { month: 'long' })} ${last.getFullYear()}`;
 	}
-	return `${loc(monday, { day: 'numeric', month: 'short' })} – ${loc(last, { day: 'numeric', month: 'short' })} ${last.getFullYear()}`;
+	return `${loc(monday, { day: 'numeric', month: 'short' })} - ${loc(last, { day: 'numeric', month: 'short' })} ${last.getFullYear()}`;
 }
 
 // Time slots for a range. `off` counts periods back from now (0 = current).
