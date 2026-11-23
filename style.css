@@ -1816,3 +1816,9 @@ body[data-v='today'] {
 		display: none;
 	}
 }
+
+/* milestones within the next 7 days: highlight the "in N days" text */
+.tline.soon .tdate .muted {
+	color: var(--clock);
+	font-weight: 700;
+}
