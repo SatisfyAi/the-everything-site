@@ -140,7 +140,7 @@ function renderStaffToday() {
 	const html = days
 		.map(
 			(g) =>
-				`<div class="tline${g.n === 0 ? ' now' : ''}${REMIND_DAYS.includes(g.n) ? ' rem' : ''}"><i class="tdot"></i><div class="tdate">${esc(shortDate(g.date))}<span class="muted"> · ${inDays(g.n)}</span></div><div class="tnames">${g.items.map(whoHtml).join('')}</div></div>`,
+				`<div class="tline${g.n === 0 ? ' now' : ''}${g.n <= 7 ? ' soon' : ''}${REMIND_DAYS.includes(g.n) ? ' rem' : ''}"><i class="tdot"></i><div class="tdate">${esc(shortDate(g.date))}<span class="muted"> · ${inDays(g.n)}</span></div><div class="tnames">${g.items.map(whoHtml).join('')}</div></div>`,
 		)
 		.join('');
 	const head = `<div class="p-head"><span class="p-title">Upcoming milestones</span><span class="muted small">${
@@ -205,7 +205,7 @@ function renderStaffList() {
 /* ---------- Share image: one month of milestones ---------- */
 // A picture for the team leads (calendar on top, the people under each date).
 // It is an SVG shown in the page; "Download image" turns it into a PNG with
-// the same exporter the pie charts use.
+// the same exporter the donut charts use.
 const STF_FONT = "-apple-system, 'Segoe UI', system-ui, Roboto, sans-serif";
 const STF_SHARE_COL = { half: '#f0c808', year: '#8b7dff' };
 
