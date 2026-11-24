@@ -27,10 +27,10 @@
 	}
 })();
 
-const VIEWS = ['today', 'water', 'discord', 'clock', 'staff', 'settings'];
+const VIEWS = ['today', 'water', 'habits', 'discord', 'clock', 'staff', 'settings'];
 
 // Current data for each file (read-only; every change goes through Store.commit).
-const S = { work: null, hyd: null, clk: null, stf: null };
+const S = { work: null, hyd: null, clk: null, stf: null, hab: null };
 
 let cur = 'today';
 let lastRefresh = Date.now();
@@ -43,6 +43,7 @@ function rebuild() {
 	S.hyd = Store.get('hydration');
 	S.clk = Store.get('clock');
 	S.stf = Store.get('staff');
+	S.hab = Store.get('habits');
 }
 
 /* ---------- navigation ---------- */
@@ -58,7 +59,6 @@ function show(v) {
 	$$('#nav a').forEach((a) => a.classList.toggle('on', a.dataset.v === navV));
 	$('.brand').classList.toggle('on', v === 'today');
 	$$('.dseg .tab').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
-	$('#fabToday').classList.remove('away');
 	$('#gear').classList.toggle('on', v === 'settings');
 	try {
 		localStorage.setItem('daybook-view', v);
@@ -167,6 +167,7 @@ function renderToday() {
 	});
 
 	renderStaffToday();
+	renderHabToday();
 
 	// hydration: the same glass as the Hydration tab, at card size
 	const { by, total } = hydTotals(todayHydEntries());
@@ -370,6 +371,7 @@ function renderAll(forceSettings) {
 	renderBanner();
 	renderToday();
 	fillStatusIcons();
+	if (cur === 'habits') renderHabits();
 	if (cur === 'staff') renderStaff();
 	if (cur === 'water') renderWater();
 	if (cur === 'discord') renderWork();
@@ -415,19 +417,6 @@ function tick() {
 		renderAll();
 	}
 }
-
-/* ---------- floating Today button: hides while scrolling down ---------- */
-let lastY = 0;
-window.addEventListener(
-	'scroll',
-	() => {
-		const y = window.scrollY;
-		if (Math.abs(y - lastY) < 8) return;
-		$('#fabToday').classList.toggle('away', y > lastY && y > 80);
-		lastY = y;
-	},
-	{ passive: true },
-);
 
 /* ---------- events ---------- */
 document.addEventListener('click', (e) => {
@@ -500,6 +489,7 @@ function init() {
 	workInit();
 	clockInit();
 	staffInit();
+	habitsInit();
 	settingsInit();
 
 	let start = 'today';
