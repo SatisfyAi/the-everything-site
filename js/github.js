@@ -25,6 +25,7 @@ const REPO_CONFIG = {
 		hydration: 'hydration-data.json',
 		clock: 'clock-data.json',
 		staff: 'staff-data.json',
+		habits: 'habits-data.json',
 	},
 };
 
@@ -37,7 +38,7 @@ const Store = (function () {
 	];
 	const CACHE_KEY = 'daybook-cache-v1';
 	const LOCAL_PREFIX = 'daybook:f:';
-	const NAMES = ['work', 'hydration', 'clock', 'staff'];
+	const NAMES = ['work', 'hydration', 'clock', 'staff', 'habits'];
 
 	const S = {
 		mode: 'local', // 'github' once a token is saved
