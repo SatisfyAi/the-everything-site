@@ -4,23 +4,21 @@ A personal dashboard that runs entirely in the browser: no server, no build
 step, plain HTML/CSS/JS. Everything you enter is saved as JSON files in a
 private GitHub repo, so the same data is on every device.
 
-| Section   | What it does                                                                                                                                                     |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Today     | One-screen overview: hydration glass, Discord donut, job-clock status, upcoming staff milestones                                                                 |
-| Hydration | Log drinks, charts per day / week / month / year / all time, history                                                                                             |
-| Discord   | Two pages behind one tab, switched with **Time \| Staff** at the top: Time (timer, manual entries, charts, history) and Staff (list, milestones, calendar image) |
-| Job clock | Start / lunch start / lunch end / end stamps, time off, week log, charts                                                                                         |
-| Settings  | GitHub connection, theme, hydration goal and drinks, Discord categories, clock numbers                                                                           |
+| Section     | What it does                                                          |
+| ----------- | --------------------------------------------------------------------- |
+| Today       | One-screen overview: hydration glass, Discord donut, job-clock status, habits, upcoming staff milestones |
+| Hydration   | Log drinks, charts per day / week / month / year / all time, history  |
+| Habits      | Habit tracker: tick, count or amount habits, streaks, stats, calendar |
+| Discord     | Two pages behind one tab, switched with **Time \| Staff** at the top: Time (timer, manual entries, charts, history) and Staff (list, milestones, calendar image) |
+| Job clock   | Start / lunch start / lunch end / end stamps, time off, week log, charts |
+| Settings    | GitHub connection, theme, hydration goal and drinks, Discord categories, clock numbers |
 
 ## Navigation
-
-- The bottom bar (top bar on desktop) has three sections: **Hydration**,
-  **Discord** and **Job clock**. Discord stays highlighted on both its Time and
-  Staff pages. Settings is the sliders icon in the header.
-- **Today** is the Daybook logo in the header (with a small dashboard icon).
-  On phones there is also a round **Today button** floating above the bar at
-  the right. It hides while you scroll down and comes back when you scroll up,
-  and it is not shown on Today itself.
+- The bottom bar (top bar on desktop) has five items: **Hydration**,
+  **Habits**, **Today** (in the middle), **Discord** and **Job clock**.
+  Discord stays highlighted on both its Time and Staff pages. Settings is the
+  sliders icon in the header.
+- The Daybook logo in the header also goes to Today.
 
 ## Sections
 
@@ -31,6 +29,9 @@ private GitHub repo, so the same data is on every device.
 - **Discord**: donut of this month's time per category, with the month total.
 - **Job clock**: an icon and label for the current status (working, lunch,
   not working, done, vacation, doctor, sick), each with its own colour.
+- **Habits**: a row of today's habits as small rings with the count of
+  finished ones and the streak. Tap a tick or count ring to log it right there;
+  amount habits (and the title) open the Habits tab.
 - **Upcoming milestones**: a timeline of the next 5 dates that have a
   staff milestone (today included). Dates today, in 2 days and in 7 days are
   highlighted as the reminder days. On wide screens the milestones card sits
@@ -84,6 +85,34 @@ private GitHub repo, so the same data is on every device.
   vacation and sick time in their own colours. Year and All time show only the
   grey hours plus doctor/vacation/sick, with no red or green.
 
+### Habits
+
+Three tabs at the top: **Today | Stats | Manage**.
+
+- **Three kinds of habit**:
+  - *Done / not done*: one tap ticks the day (for example a sudoku puzzle).
+  - *Count*: a number of times a day (for example brushing teeth, 2 a day).
+    The ring is split into that many rounded segments (2 to 12) and each tap
+    fills the next one; **−** takes one back. The day is done when all are filled.
+  - *Amount*: a daily target with a unit (for example 2000 ml or 30 pages).
+    The ring fills as you add. Quick-add buttons (up to three, for example
+    `250, 500`) and a **…** box for any amount (negative removes some). Going
+    over the target is kept. The day is done when the target is reached.
+- **Today**: today's habits with their rings, the number done and the streak
+  across all of them. Habits not scheduled today are listed in grey underneath.
+- **Stats**: today, overall streak and 30-day completion, a 12-week heat map
+  (brighter = more of that day done) and a list per habit with streak, best
+  streak and 30-day rate. Tap a habit for its page: streak, best, 30 days,
+  total, a month calendar and a **Log a day** form to fix or fill in past days.
+- **Manage**: add, edit, archive/restore and delete habits. A habit has a name,
+  colour, type, target (and unit), the days it applies to and a start date.
+  Archived habits disappear from Today and Stats but keep their history.
+  Deleting also removes the habit's history.
+- **Streak rules**: days a habit is not scheduled are skipped and never break
+  the streak, and neither does today while it is still open. Whether a day
+  counts is always judged against the habit's current target, so changing a
+  target also changes how past days are judged.
+
 ### Staff (the second page of the Discord tab)
 
 - **List** with Current / Former / All filters, search, edit and delete. A
@@ -131,7 +160,8 @@ per section. The file names and repo are set in `REPO_CONFIG` at the top of
 | `data.json`           | Discord time: `{ categories: [{key, label, color}], sessions: [{id, category, startDate, endDate, minutes, note?}] }`                                                                                                                                   |
 | `hydration-data.json` | `{ categories, entries: [{id, category, date, amount}], settings: { goal, amounts } }`                                                                                                                                                                  |
 | `clock-data.json`     | `{ settings: { startShift, endShift, dayTarget }, days: { "YYYY-MM-DD": { s, ls, le, e, off?: { type, min? } } } }`. `s/ls/le/e` are the four stamps; `off.type` is `vacation`, `doctor` or `sick`; `off.min` is the minutes away (missing = whole day) |
-| `staff-data.json`     | `{ staff: [{ id, name, joined, left?, discord?, reddit?, discordId? }] }` with ISO dates                                                                                                                                                                |
+| `habits-data.json`    | `{ habits: [{ id, name, color, type: 'done'\|'count'\|'amount', target, unit?, quick?: [numbers], days?: [0-6] (0 = Sunday, missing = every day), start, archived? }], log: { "YYYY-MM-DD": { <habitId>: number } } }` |
+| `staff-data.json`     | `{ staff: [{ id, name, joined, left?, discord?, reddit?, discordId? }] }` with ISO dates                                                                                                                                                                                               |
 
 The files are created automatically the first time something is saved.
 `staff-data.json` can be read by other tools (for example a report
@@ -189,13 +219,13 @@ your repo is named differently).
 
 ## Project layout
 
-- `index.html`: all views (Today, Hydration, Discord, Job clock, Staff, Settings)
+- `index.html`: all views (Today, Hydration, Habits, Discord, Job clock, Staff, Settings)
 - `style.css`: the whole design
 - `js/github.js`: GitHub store, queue and local fallback, `REPO_CONFIG`
 - `js/data.js`: defaults and data helpers
 - `js/app.js`: navigation, Today view, status icons, live refresh
 - `js/chart.js`: stacked-bar and donut charts and PNG export
-- `js/hydration.js`, `js/work.js`, `js/clock.js`, `js/staff.js`: the sections
+- `js/hydration.js`, `js/work.js`, `js/clock.js`, `js/staff.js`, `js/habits.js`: the sections
 - `js/timer.js`: the running Discord timer
 - `js/settings.js`: settings page
 - `js/util.js`: small helpers
@@ -204,7 +234,7 @@ your repo is named differently).
 ## Notes
 
 - **Cache busting**: scripts and the stylesheet are loaded with `?v=N`
-  (currently `v=36`). After changing a file, raise the number in
+  (currently `v=39`). After changing a file, raise the number in
   `index.html` so phones do not use an old copy.
 - **Fonts**: Outfit (headings, logo, big numbers), Inter (body text) and
   Roboto Mono (labels and numbers), loaded from Google Fonts in `index.html`.
