@@ -16,7 +16,7 @@
 		<meta name="theme-color" content="#0b0e13" />
 		<link rel="manifest" href="manifest.json" />
 		<link rel="apple-touch-icon" href="hub.png" />
-		<link rel="icon" type="image/png" href="hub.png?v=38" />
+		<link rel="icon" type="image/png" href="hub.png?v=39" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -33,23 +33,11 @@
 				document.documentElement.setAttribute('data-theme', 'dark');
 			}
 		</script>
-		<link rel="stylesheet" href="style.css?v=38" />
+		<link rel="stylesheet" href="style.css?v=39" />
 	</head>
 	<body data-v="today">
 		<header class="top">
-			<button
-				class="brand"
-				data-v="today"
-				type="button"
-				aria-label="Daybook, go to Today"
-			>
-				<svg viewBox="0 0 24 24" aria-hidden="true">
-					<rect x="4" y="4" width="7" height="9" rx="2" />
-					<rect x="13" y="4" width="7" height="5" rx="2" />
-					<rect x="4" y="15" width="7" height="5" rx="2" />
-					<rect x="13" y="11" width="7" height="9" rx="2" /></svg
-				><span>Daybook</span>
-			</button>
+			<button class="brand" data-v="today" type="button" aria-label="Daybook, go to Today"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="9" rx="2" /><rect x="13" y="4" width="7" height="5" rx="2" /><rect x="4" y="15" width="7" height="5" rx="2" /><rect x="13" y="11" width="7" height="9" rx="2" /></svg><span>Daybook</span></button>
 			<nav id="nav" aria-label="Sections">
 				<a href="#water" data-v="water" class="n-water"
 					><svg viewBox="0 0 24 24">
@@ -57,6 +45,20 @@
 							d="M12 3c3.5 4.2 6 7 6 10a6 6 0 0 1-12 0c0-3 2.5-5.8 6-10z"
 						/></svg
 					><span>Hydration</span></a
+				>
+				<a href="#habits" data-v="habits" class="n-habits"
+					><svg viewBox="0 0 24 24">
+						<circle cx="12" cy="12" r="9" />
+						<path d="M8 12.5l3 3 5-6" /></svg
+					><span>Habits</span></a
+				>
+				<a href="#today" data-v="today" class="n-today"
+					><svg viewBox="0 0 24 24">
+						<rect x="4" y="4" width="7" height="9" rx="2" />
+						<rect x="13" y="4" width="7" height="5" rx="2" />
+						<rect x="4" y="15" width="7" height="5" rx="2" />
+						<rect x="13" y="11" width="7" height="9" rx="2" /></svg
+					><span>Today</span></a
 				>
 				<a href="#discord" data-v="discord" class="n-discord"
 					><svg viewBox="0 0 24 24">
@@ -87,21 +89,6 @@
 			</div>
 		</header>
 
-		<button
-			id="fabToday"
-			class="fab"
-			data-v="today"
-			type="button"
-			aria-label="Go to Today"
-		>
-			<svg viewBox="0 0 24 24" aria-hidden="true">
-				<rect x="4" y="4" width="7" height="9" rx="2" />
-				<rect x="13" y="4" width="7" height="5" rx="2" />
-				<rect x="4" y="15" width="7" height="5" rx="2" />
-				<rect x="13" y="11" width="7" height="9" rx="2" />
-			</svg>
-		</button>
-
 		<div id="banner" class="banner" hidden>
 			<span class="msg" id="bannerMsg"></span>
 			<button id="bannerBtn" type="button"></button>
@@ -120,8 +107,85 @@
 						<article class="panel discord" id="hubWork"></article>
 						<article class="panel clock" id="hubClock"></article>
 					</div>
-					<div id="stfWrap">
-						<div id="stfToday" class="reminders"></div>
+					<div class="todaycol">
+						<div id="habToday"></div>
+						<div id="stfWrap">
+							<div id="stfToday" class="reminders"></div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- ===================== HABITS ===================== -->
+			<section id="v-habits" class="view" hidden>
+				<div>
+					<div class="eyebrow">Habits</div>
+					<h1 class="h-display">Habits</h1>
+				</div>
+				<div class="tabs dseg" id="habTabs" role="group" aria-label="Habits section">
+					<button class="tab on" type="button" data-ht="today">Today</button>
+					<button class="tab" type="button" data-ht="stats">Stats</button>
+					<button class="tab" type="button" data-ht="manage">Manage</button>
+				</div>
+
+				<div id="habBody"></div>
+
+				<div id="habManage" hidden>
+					<div class="card">
+						<div class="lab">Habit</div>
+						<div class="form" style="margin-top: 10px">
+							<div class="field" style="grid-column: 1 / -1">
+								<label for="habName">Name</label>
+								<input id="habName" type="text" placeholder="e.g. Brush teeth" autocomplete="off" />
+							</div>
+						</div>
+						<div class="field" style="margin-top: 14px">
+							<label>Colour</label>
+							<div id="habColors" class="hswatches"></div>
+						</div>
+						<div class="field" style="margin-top: 14px">
+							<label>How is it measured?</label>
+							<div class="tabs sm" id="habType" role="group" aria-label="Type">
+								<button class="tab" type="button" data-hty="done">Done / not done</button>
+								<button class="tab" type="button" data-hty="count">Count</button>
+								<button class="tab" type="button" data-hty="amount">Amount</button>
+							</div>
+						</div>
+						<div class="form" style="margin-top: 14px">
+							<div class="field" id="habTargetWrap">
+								<label for="habTarget" id="habTargetLab">Daily target</label>
+								<input id="habTarget" type="number" inputmode="decimal" step="any" min="0" />
+							</div>
+							<div class="field" id="habUnitWrap">
+								<label for="habUnit">Unit</label>
+								<input id="habUnit" type="text" list="habUnits" placeholder="ml, pages, min…" autocomplete="off" />
+								<datalist id="habUnits"><option value="ml"></option><option value="min"></option><option value="pages"></option><option value="km"></option><option value="steps"></option></datalist>
+							</div>
+							<div class="field" id="habQuickWrap">
+								<label for="habQuick">Quick-add buttons</label>
+								<input id="habQuick" type="text" placeholder="250, 500" autocomplete="off" />
+							</div>
+						</div>
+						<div class="field" style="margin-top: 14px">
+							<label>Days</label>
+							<div id="habDays" class="hdays"></div>
+							<span class="muted small">Days you leave out don't break the streak.</span>
+						</div>
+						<div class="form" style="margin-top: 14px">
+							<div class="field">
+								<label for="habStart">Starts</label>
+								<input id="habStart" type="date" />
+							</div>
+						</div>
+						<div class="addrow">
+							<button class="btn" id="habSave" type="button">Add habit</button>
+							<button class="btn ghost" id="habCancel" type="button" hidden>Cancel</button>
+						</div>
+						<div class="note" id="habMsg"></div>
+					</div>
+					<div class="card">
+						<div class="lab">Your habits</div>
+						<div id="habList"></div>
 					</div>
 				</div>
 			</section>
@@ -228,9 +292,9 @@
 					<h1 class="h-display">Team manager</h1>
 				</div>
 				<div class="tabs dseg" role="group" aria-label="Discord section">
-					<button class="tab on" type="button" data-v="discord">Time</button>
-					<button class="tab" type="button" data-v="staff">Staff</button>
-				</div>
+						<button class="tab on" type="button" data-v="discord">Time</button>
+						<button class="tab" type="button" data-v="staff">Staff</button>
+					</div>
 				<div class="card timer">
 					<div>
 						<div class="lab">What are you working on?</div>
@@ -485,9 +549,9 @@
 					<h1 class="h-display">Team manager</h1>
 				</div>
 				<div class="tabs dseg" role="group" aria-label="Discord section">
-					<button class="tab" type="button" data-v="discord">Time</button>
-					<button class="tab on" type="button" data-v="staff">Staff</button>
-				</div>
+						<button class="tab" type="button" data-v="discord">Time</button>
+						<button class="tab on" type="button" data-v="staff">Staff</button>
+					</div>
 
 				<div class="card">
 					<div class="chart-head">
@@ -773,16 +837,17 @@
 			</section>
 		</main>
 
-		<script src="js/util.js?v=38"></script>
-		<script src="js/data.js?v=38"></script>
-		<script src="js/github.js?v=38"></script>
-		<script src="js/timer.js?v=38"></script>
-		<script src="js/chart.js?v=38"></script>
-		<script src="js/hydration.js?v=38"></script>
-		<script src="js/work.js?v=38"></script>
-		<script src="js/clock.js?v=38"></script>
-		<script src="js/staff.js?v=38"></script>
-		<script src="js/settings.js?v=38"></script>
-		<script src="js/app.js?v=38"></script>
+		<script src="js/util.js?v=39"></script>
+		<script src="js/data.js?v=39"></script>
+		<script src="js/github.js?v=39"></script>
+		<script src="js/timer.js?v=39"></script>
+		<script src="js/chart.js?v=39"></script>
+		<script src="js/hydration.js?v=39"></script>
+		<script src="js/work.js?v=39"></script>
+		<script src="js/clock.js?v=39"></script>
+		<script src="js/staff.js?v=39"></script>
+		<script src="js/habits.js?v=39"></script>
+		<script src="js/settings.js?v=39"></script>
+		<script src="js/app.js?v=39"></script>
 	</body>
 </html>
