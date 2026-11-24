@@ -16,6 +16,7 @@
 	--clock: #ea8732;
 	--staff: #e6544c;
 	--today: #cebead;
+	--habit: #5ccf8a;
 	--hours: #8b94a5;
 	--doctor: #4fc3f7;
 	--vacation: #8b7dff;
@@ -48,6 +49,7 @@
 	--clock: #ea8732;
 	--staff: #e6544c;
 	--today: #cebead;
+	--habit: #5ccf8a;
 	--hours: #9aa1ad;
 	--doctor: #0288d1;
 	--vacation: #5b4de0;
@@ -217,6 +219,9 @@ code {
 }
 .n-today.on svg {
 	color: var(--today);
+}
+.n-habits.on svg {
+	color: var(--habit);
 }
 .status {
 	margin-left: auto;
@@ -1754,15 +1759,14 @@ body[data-v='today'] {
 	opacity: 1;
 }
 
-/* ---- Staff + Discord share one nav item; Today = logo + floating button ---- */
+/* ---- Staff + Discord share one nav item; Today = logo + middle nav item ---- */
 .brand {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
 	cursor: pointer;
 }
-.brand svg,
-.fab svg {
+.brand svg {
 	width: 22px;
 	height: 22px;
 	fill: none;
@@ -1783,42 +1787,396 @@ body[data-v='today'] {
 	min-height: 40px;
 	font-size: 15px;
 }
-.fab {
-	display: none;
-}
-@media (max-width: 720px) {
-	.fab {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		position: fixed;
-		right: 14px;
-		bottom: calc(78px + env(safe-area-inset-bottom));
-		z-index: 25;
-		width: 48px;
-		height: 48px;
-		padding: 0;
-		border-radius: 50%;
-		border: 0;
-		background: var(--accent);
-		color: var(--on);
-		box-shadow: var(--shadow);
-		transition:
-			transform 0.2s ease,
-			opacity 0.2s ease;
-	}
-	.fab.away {
-		transform: translateY(90px);
-		opacity: 0;
-		pointer-events: none;
-	}
-	body[data-v='today'] .fab {
-		display: none;
-	}
-}
-
 /* milestones within the next 7 days: highlight the "in N days" text */
 .tline.soon .tdate .muted {
 	color: var(--clock);
 	font-weight: 700;
+}
+
+/* ================= Habits ================= */
+.todaycol {
+	display: grid;
+	gap: 18px;
+	align-content: start;
+	grid-template-rows: auto 1fr;
+	min-width: 0;
+}
+#habToday {
+	display: grid;
+}
+.habcard {
+	padding: 12px 14px;
+	display: grid;
+	gap: 12px;
+}
+.habcard-h {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+}
+.habcard .p-title {
+	background: none;
+	border: 0;
+	padding: 0;
+	color: var(--muted);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+}
+.habadd {
+	background: transparent;
+	border: 1px dashed var(--line);
+	border-radius: 12px;
+	color: var(--muted);
+	padding: 12px;
+}
+.habstrip {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+	gap: 10px 6px;
+}
+.hitem {
+	display: grid;
+	justify-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+.hlabel {
+	background: none;
+	border: 0;
+	padding: 0;
+	font-size: 11px;
+	color: var(--muted);
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* the ring: one look for all three kinds of habit */
+.hring {
+	position: relative;
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--text);
+	font: 500 11px/1 'Roboto Mono', ui-monospace, monospace;
+}
+button.hring {
+	cursor: pointer;
+}
+button.hring:active {
+	transform: scale(0.94);
+}
+.hring.full {
+	background: var(--hc);
+}
+.hr-svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	transform: rotate(-90deg);
+}
+.hr-track {
+	stroke: var(--line);
+}
+.hr-lab {
+	position: relative;
+}
+.hr-tick {
+	width: 46%;
+	height: 46%;
+	fill: none;
+	stroke-width: 2.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* Habits page */
+.habsum {
+	display: flex;
+	gap: 36px;
+}
+.habrows {
+	padding-top: 6px;
+	padding-bottom: 6px;
+}
+.hrow {
+	padding: 12px 0;
+	border-bottom: 1px solid var(--line);
+}
+.hrow:last-child {
+	border-bottom: 0;
+}
+.hmain {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+.hname {
+	flex: 1;
+	min-width: 0;
+	display: grid;
+	gap: 2px;
+	text-align: left;
+	background: none;
+	border: 0;
+	padding: 0;
+	color: var(--text);
+}
+.hname b {
+	font-weight: 500;
+	font-size: 16px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.hact {
+	display: flex;
+	gap: 6px;
+	flex: none;
+}
+.hbtn {
+	min-width: 44px;
+	height: 40px;
+	padding: 0 12px;
+	border-radius: 12px;
+	border: 1px solid var(--line);
+	background: transparent;
+	color: var(--text);
+	font: 500 13px/1 'Roboto Mono', ui-monospace, monospace;
+}
+.hbtn:disabled {
+	opacity: 0.4;
+}
+.hbtn:not(:disabled):active {
+	transform: scale(0.95);
+}
+.hcustom {
+	display: flex;
+	gap: 8px;
+	margin-top: 10px;
+}
+.hcustom input {
+	flex: 1;
+	min-width: 0;
+}
+.habrest {
+	margin: 0;
+}
+.habempty {
+	display: grid;
+	gap: 10px;
+	justify-items: start;
+}
+.habempty p {
+	margin: 0;
+}
+.hstats {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+}
+.hstats.four {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.hstats .card {
+	padding: 12px;
+}
+.hstats .p-big {
+	font-size: clamp(20px, 5.5vw, 30px);
+}
+.heat {
+	display: grid;
+	grid-template-rows: repeat(7, 1fr);
+	grid-auto-flow: column;
+	grid-auto-columns: 1fr;
+	gap: 4px;
+	margin-top: 12px;
+}
+.hm {
+	display: block;
+	aspect-ratio: 1;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--done) var(--p, 0%), var(--card2));
+}
+.hm.none {
+	background: color-mix(in srgb, var(--card2) 55%, transparent);
+}
+.hm.fut {
+	background: transparent;
+}
+.hlist {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+	padding: 12px 0;
+	background: none;
+	border: 0;
+	border-bottom: 1px solid var(--line);
+	color: var(--text);
+	text-align: left;
+}
+.hlist:last-child {
+	border-bottom: 0;
+}
+.hdot {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	flex: none;
+}
+.hdot.big {
+	width: 18px;
+	height: 18px;
+}
+.hl-name {
+	flex: 1;
+	min-width: 0;
+	display: grid;
+	gap: 2px;
+}
+.hl-rate {
+	display: grid;
+	gap: 5px;
+	justify-items: end;
+	width: 80px;
+}
+.hbar {
+	display: block;
+	width: 100%;
+	height: 5px;
+	border-radius: 3px;
+	background: var(--card2);
+	overflow: hidden;
+}
+.hbar i {
+	display: block;
+	height: 100%;
+	border-radius: 3px;
+}
+.hback {
+	justify-self: start;
+}
+.hhead {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.hcal {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 6px;
+	margin-top: 12px;
+}
+.hcl {
+	text-align: center;
+	font: 500 11px/1 'Roboto Mono', ui-monospace, monospace;
+	color: var(--muted);
+	padding-bottom: 2px;
+}
+.hcell {
+	aspect-ratio: 1;
+	border-radius: 10px;
+	border: 1px solid transparent;
+	background: var(--card2);
+	color: var(--text);
+	font: 500 12px/1 'Roboto Mono', ui-monospace, monospace;
+	padding: 0;
+}
+.hcell.ok {
+	background: var(--hc);
+	color: #111;
+	font-weight: 700;
+}
+.hcell.part {
+	background: color-mix(in srgb, var(--hc) 35%, transparent);
+}
+.hcell.miss {
+	background: transparent;
+	border-color: var(--line);
+}
+.hcell.off {
+	background: transparent;
+	color: var(--muted);
+	opacity: 0.45;
+}
+.hcell.now {
+	box-shadow: 0 0 0 2px var(--text) inset;
+}
+.hcell.sel {
+	outline: 2px solid var(--text);
+	outline-offset: 2px;
+}
+.hlegend {
+	margin-top: 12px;
+}
+.hswatches,
+.hdays {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+.hdays {
+	gap: 6px;
+}
+.sw {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 0;
+	padding: 0;
+}
+.sw.on {
+	outline: 2px solid var(--text);
+	outline-offset: 2px;
+}
+.hday {
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	border: 1px solid var(--line);
+	background: transparent;
+	color: var(--muted);
+	font: 500 13px/1 'Roboto Mono', ui-monospace, monospace;
+}
+.hday.on {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--on);
+	font-weight: 700;
+}
+.srow.arch {
+	opacity: 0.6;
+}
+.srow .btn.sm {
+	margin-right: 4px;
+}
+#habBody,
+#habManage {
+	display: grid;
+	gap: 16px;
+}
+.srow .btn.sm {
+	padding: 5px 12px;
+	min-height: 32px;
+	font-size: 13px;
+	flex: none;
+}
+.srow .sinfo {
+	flex: 1;
+	min-width: 0;
+}
+.hcal {
+	max-width: 440px;
+}
+.heat {
+	max-width: 620px;
 }
