@@ -11,6 +11,12 @@
 //       entries:    [{ id, category, date, amount }],
 //       settings:   { goal, amounts: { <categoryKey>: ml } } }
 //
+//   habits-data.json     Habit tracker
+//     { habits: [{ id, name, color, type: 'done'|'count'|'amount', target,
+//                  unit, quick: [numbers], days: [0-6] (0 = Sunday, omitted =
+//                  every day), start: 'YYYY-MM-DD', archived? }],
+//       log:    { "YYYY-MM-DD": { <habitId>: number } } }
+//
 //   clock-data.json      Job clock (new)
 //     { settings: { startShift, endShift, dayTarget },
 //       days:     { "YYYY-MM-DD": { s, ls, le, e } } }     // "HH:MM" strings
@@ -56,6 +62,7 @@ const EMPTY_FILE = {
 	}),
 	clock: () => ({ settings: clone(DEFAULT_CLOCK_SETTINGS), days: {} }),
 	staff: () => ({ staff: [] }),
+	habits: () => ({ habits: [], log: {} }),
 };
 
 // Which list inside each file holds the records.
@@ -79,6 +86,9 @@ function normalizeFile(name, data) {
 			d.settings.amounts = clone(DEFAULT_TAP);
 	} else if (name === 'staff') {
 		if (!Array.isArray(d.staff)) d.staff = [];
+	} else if (name === 'habits') {
+		if (!Array.isArray(d.habits)) d.habits = [];
+		if (!d.log || typeof d.log !== 'object' || Array.isArray(d.log)) d.log = {};
 	} else if (name === 'clock') {
 		if (!d.settings || typeof d.settings !== 'object') d.settings = {};
 		['startShift', 'endShift', 'dayTarget'].forEach((k) => {
